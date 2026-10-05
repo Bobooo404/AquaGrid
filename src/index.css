@@ -1,0 +1,227 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-bg-primary: #f0f7ff;
+  --color-bg-secondary: #e0efff;
+  --color-bg-card: #ffffff;
+  --color-bg-card-hover: #e8f4ff;
+  --color-border: #bfdbfe;
+  --color-border-bright: #93c5fd;
+  --color-accent-cyan: #0ea5e9;
+  --color-accent-blue: #2563eb;
+  --color-accent-glow: #0ea5e940;
+  --color-water-full: #0ea5e9;
+  --color-water-low: #f97316;
+  --color-water-critical: #ef4444;
+  --color-text-primary: #1e3a5f;
+  --color-text-secondary: #3b6fa0;
+  --color-text-muted: #7ba8cc;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --font-display: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-body: 'Inter', 'DM Sans', sans-serif;
+}
+
+:root {
+  --bg-primary: #f0f7ff;
+  --bg-secondary: #e0efff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #e8f4ff;
+  --bg-subtle: #eff6ff;
+  --bg-neutral: #f8fafc;
+  --border: #dbeafe;
+  --border-strong: #bfdbfe;
+  --border-neutral: #e2e8f0;
+  --accent-cyan: #0ea5e9;
+  --accent-blue: #2563eb;
+  --text-primary: #1e3a5f;
+  --text-secondary: #3b6fa0;
+  --text-muted: #7ba8cc;
+  --surface-shadow: rgba(14, 165, 233, 0.08);
+  --danger-surface: #fef2f2;
+  --danger-border: #fca5a5;
+  --danger-text: #dc2626;
+  --warning-surface: #fffbeb;
+  --warning-border: #fcd34d;
+  --warning-text: #d97706;
+  --success-surface: #f0fdf4;
+  --success-border: #86efac;
+  --success-text: #16a34a;
+  --info-surface: #e0f2fe;
+  --purple-surface: #f5f3ff;
+  --tank-shell: #edf7ff;
+  --tank-inner-border: #93c5fd;
+  --tank-tick: #3b6fa0;
+  --tank-label: #ffffff;
+  --tank-label-stroke: rgba(15, 35, 58, 0.78);
+  --tank-fitting: #31577b;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #07111f;
+  --bg-secondary: #0a1728;
+  --bg-card: #0f1f33;
+  --bg-card-hover: #142943;
+  --bg-subtle: #122741;
+  --bg-neutral: #101c2c;
+  --border: #1d3855;
+  --border-strong: #2d5378;
+  --border-neutral: #263c53;
+  --accent-cyan: #38bdf8;
+  --accent-blue: #60a5fa;
+  --text-primary: #e7f2ff;
+  --text-secondary: #b8d3ed;
+  --text-muted: #7fa5c8;
+  --surface-shadow: rgba(0, 0, 0, 0.28);
+  --danger-surface: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(248, 113, 113, 0.48);
+  --danger-text: #f87171;
+  --warning-surface: rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(251, 191, 36, 0.48);
+  --warning-text: #fbbf24;
+  --success-surface: rgba(16, 185, 129, 0.12);
+  --success-border: rgba(52, 211, 153, 0.45);
+  --success-text: #34d399;
+  --info-surface: rgba(14, 165, 233, 0.12);
+  --purple-surface: rgba(139, 92, 246, 0.14);
+  --tank-shell: #081525;
+  --tank-inner-border: #31577b;
+  --tank-tick: #7fa5c8;
+  --tank-label: #f8fbff;
+  --tank-label-stroke: rgba(3, 10, 20, 0.88);
+  --tank-fitting: #4d7195;
+  color-scheme: dark;
+}
+
+.bg-app { background: var(--bg-primary); }
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.tank-bank {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .hover\:bg-blue-50:hover { background-color: var(--bg-card-hover); }
+[data-theme="dark"] .hover\:bg-blue-100:hover { background-color: var(--bg-card-hover); }
+[data-theme="dark"] .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.12); }
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #f0f7ff;
+  color: #1e3a5f;
+  font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #bfdbfe;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #93c5fd;
+}
+
+/* Light card */
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #dbeafe;
+  box-shadow: 0 1px 8px rgba(14, 165, 233, 0.06), 0 0 0 0 transparent;
+}
+
+/* Water glow effect */
+.water-glow {
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.2), 0 0 40px rgba(14, 165, 233, 0.08);
+}
+
+/* Animated pipeline flow */
+@keyframes flow-dash {
+  to { stroke-dashoffset: -20; }
+}
+@keyframes flow-dash-reverse {
+  to { stroke-dashoffset: 20; }
+}
+
+.flow-active {
+  stroke-dasharray: 8 4;
+  animation: flow-dash 0.8s linear infinite;
+}
+.flow-sewage {
+  stroke-dasharray: 6 6;
+  animation: flow-dash 1.2s linear infinite;
+}
+.flow-recycled {
+  stroke-dasharray: 8 4;
+  animation: flow-dash-reverse 1s linear infinite;
+}
+
+/* Pump spin animation */
+@keyframes pump-spin {
+  to { transform: rotate(360deg); }
+}
+.pump-running {
+  animation: pump-spin 1.5s linear infinite;
+}
+
+/* Pulse glow */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Toast slide-in */
+@keyframes toast-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.toast-enter {
+  animation: toast-in 0.3s ease-out;
+}
+
+/* Number counter */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.count-enter {
+  animation: count-up 0.4s ease-out;
+}
+
+/* Alert pop-in */
+@keyframes alert-in {
+  from { opacity: 0; transform: translateY(-10px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.alert-enter {
+  animation: alert-in 0.3s ease-out;
+}
+
+/* Ripple */
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.ripple {
+  animation: ripple 1.5s ease-out infinite;
+}
