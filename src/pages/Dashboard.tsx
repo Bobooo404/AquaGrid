@@ -236,13 +236,12 @@ export default function Dashboard({ buildings, alerts, selectedSite, onSelectBui
     [buildings],
   );
 
-  const availableBuildings = useMemo<DisplayBuilding[]>(
-    () =>
-      selectedSite === "Majestique Towers, Kharadi"
-        ? majesticBuildings
-        : buildings.map((building) => ({ ...building, sourceBuildingId: building.id })),
-    [buildings, majesticBuildings, selectedSite],
-  );
+  const availableBuildings = useMemo<DisplayBuilding[]>(() => {
+    if (!selectedSite) return [];
+    return selectedSite === "Majestique Towers, Kharadi"
+      ? majesticBuildings
+      : buildings.map((building) => ({ ...building, sourceBuildingId: building.id }));
+  }, [buildings, majesticBuildings, selectedSite]);
 
   const visibleBuildings = useMemo(() => {
     if (buildingFilter === "all") return availableBuildings;
@@ -298,6 +297,20 @@ export default function Dashboard({ buildings, alerts, selectedSite, onSelectBui
       </div>
 
       {/* Buildings grid */}
+      {!selectedSite ? (
+        <div
+          className="rounded-2xl p-12 flex flex-col items-center justify-center text-center gap-3"
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)" }}
+        >
+          <Building2 size={32} style={{ color: "var(--text-muted)" }} />
+          <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+            No site selected
+          </div>
+          <p className="text-xs max-w-xs" style={{ color: "var(--text-muted)" }}>
+            Select a site from the dropdown in the top bar to view its building status.
+          </p>
+        </div>
+      ) : (
       <div>
         <div className="flex items-center justify-between gap-3 mb-4">
           <h2 className="text-xs font-semibold uppercase tracking-widest font-mono" style={{ color: "var(--text-muted)" }}>Building Status</h2>
@@ -366,6 +379,7 @@ export default function Dashboard({ buildings, alerts, selectedSite, onSelectBui
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 }

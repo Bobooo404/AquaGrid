@@ -80,7 +80,7 @@ export const initialBuildings: Building[] = [
     tanks: [
       {
         id: "b1-ot",
-        name: "Tank 1",
+        name: "Domestic",
         type: "overhead",
         capacity: 50000,
         currentLevel: 72,
@@ -89,7 +89,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b1-gt",
-        name: "Tank 2",
+        name: "Drinking",
         type: "ground",
         capacity: 120000,
         currentLevel: 85,
@@ -98,7 +98,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b1-gt-2",
-        name: "Tank 3",
+        name: "Flushing",
         type: "ground",
         capacity: 90000,
         currentLevel: 64,
@@ -180,7 +180,7 @@ export const initialBuildings: Building[] = [
     tanks: [
       {
         id: "b2-ot",
-        name: "Tank 1",
+        name: "Domestic",
         type: "overhead",
         capacity: 80000,
         currentLevel: 23,
@@ -189,7 +189,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b2-gt",
-        name: "Tank 2",
+        name: "Drinking",
         type: "ground",
         capacity: 200000,
         currentLevel: 61,
@@ -198,7 +198,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b2-gt-2",
-        name: "Tank 3",
+        name: "Flushing",
         type: "ground",
         capacity: 140000,
         currentLevel: 76,
@@ -273,7 +273,7 @@ export const initialBuildings: Building[] = [
     tanks: [
       {
         id: "b3-ot",
-        name: "Tank 1",
+        name: "Domestic",
         type: "overhead",
         capacity: 100000,
         currentLevel: 91,
@@ -282,7 +282,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b3-gt",
-        name: "Tank 2",
+        name: "Drinking",
         type: "ground",
         capacity: 300000,
         currentLevel: 78,
@@ -291,7 +291,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b3-gt-2",
-        name: "Tank 3",
+        name: "Flushing",
         type: "ground",
         capacity: 180000,
         currentLevel: 83,
@@ -381,7 +381,7 @@ export const initialBuildings: Building[] = [
     tanks: [
       {
         id: "b4-ot",
-        name: "Tank 1",
+        name: "Domestic",
         type: "overhead",
         capacity: 60000,
         currentLevel: 11,
@@ -390,7 +390,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b4-gt",
-        name: "Tank 2",
+        name: "Drinking",
         type: "ground",
         capacity: 150000,
         currentLevel: 38,
@@ -399,7 +399,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b4-gt-2",
-        name: "Tank 3",
+        name: "Flushing",
         type: "ground",
         capacity: 100000,
         currentLevel: 52,
@@ -474,7 +474,7 @@ export const initialBuildings: Building[] = [
     tanks: [
       {
         id: "b5-ot",
-        name: "Tank 1",
+        name: "Domestic",
         type: "overhead",
         capacity: 25000,
         currentLevel: 55,
@@ -483,7 +483,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b5-gt",
-        name: "Tank 2",
+        name: "Drinking",
         type: "ground",
         capacity: 75000,
         currentLevel: 67,
@@ -492,7 +492,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b5-gt-2",
-        name: "Tank 3",
+        name: "Flushing",
         type: "ground",
         capacity: 50000,
         currentLevel: 73,

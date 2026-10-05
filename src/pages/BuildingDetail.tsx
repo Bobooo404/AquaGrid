@@ -3,7 +3,7 @@ import { ArrowLeft, RotateCw, Circle, Sliders, AlertTriangle } from "lucide-reac
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
-import type { Building } from "../data/mockData";
+import type { Building, Tank } from "../data/mockData";
 import TankVisual from "../components/TankVisual";
 
 interface BuildingDetailProps {
@@ -13,13 +13,24 @@ interface BuildingDetailProps {
   onToggleValve: (buildingId: string, valveId: string) => void;
 }
 
-function generateHistory(level: number) {
+const tankSeriesColors = ["var(--accent-cyan)", "#10b981", "#f59e0b", "#8b5cf6"];
+
+function generateHistory(tanks: Tank[]) {
   const now = Date.now();
-  return Array.from({ length: 30 }, (_, i) => ({
-    time: new Date(now - (29 - i) * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    overhead: Math.max(0, Math.min(100, level + (Math.random() - 0.5) * 20 - (29 - i) * 0.3)),
-    ground: Math.max(0, Math.min(100, 70 + (Math.random() - 0.5) * 15)),
-  }));
+  return Array.from({ length: 30 }, (_, i) => {
+    const point: Record<string, string | number> = {
+      time: new Date(now - (29 - i) * 60000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+    tanks.forEach((tank, index) => {
+      const drift = index === 0 ? -0.3 : index === 1 ? -0.15 : -0.2;
+      const spread = 20 - index * 4;
+      point[tank.id] = Math.max(
+        0,
+        Math.min(100, tank.currentLevel + (Math.random() - 0.5) * spread - (29 - i) * drift),
+      );
+    });
+    return point;
+  });
 }
 
 const pipelineColors: Record<string, string> = {
@@ -31,16 +42,16 @@ const pipelineColors: Record<string, string> = {
 export default function BuildingDetail({ building, onBack, onTogglePump, onToggleValve }: BuildingDetailProps) {
   const [confirmPump, setConfirmPump] = useState<string | null>(null);
   const [confirmValve, setConfirmValve] = useState<string | null>(null);
-  const [thresholds, setThresholds] = useState({
-    overheadLow:  building.tanks[0]?.lowThreshold ?? 30,
-    overheadCrit: building.tanks[0]?.criticalThreshold ?? 15,
-    groundLow:    building.tanks[1]?.lowThreshold ?? 25,
-    groundCrit:   building.tanks[1]?.criticalThreshold ?? 10,
-  });
+  const [thresholds, setThresholds] = useState<Record<string, number>>(() =>
+    Object.fromEntries(
+      building.tanks.flatMap((tank) => [
+        [`${tank.id}-low`, tank.lowThreshold],
+        [`${tank.id}-crit`, tank.criticalThreshold],
+      ]),
+    ),
+  );
 
-  const overhead = building.tanks.find((t) => t.type === "overhead")!;
-  const ground   = building.tanks.find((t) => t.type === "ground")!;
-  const history  = generateHistory(overhead?.currentLevel ?? 50);
+  const history = generateHistory(building.tanks);
 
   const cardStyle = { background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 1px 8px rgba(14,165,233,0.06)" };
   const rowStyle  = { background: "var(--bg-primary)", border: "1px solid var(--border)" };
@@ -67,11 +78,12 @@ export default function BuildingDetail({ building, onBack, onTogglePump, onToggl
           {/* Tanks */}
           <div className="rounded-2xl p-6" style={cardStyle}>
             <h2 className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>Tank Levels</h2>
-            <div className="flex items-end justify-center gap-12">
-              {overhead && <TankVisual level={overhead.currentLevel} capacity={overhead.capacity} name="Overhead" type="overhead" size="lg" />}
-              {ground   && <TankVisual level={ground.currentLevel}   capacity={ground.capacity}   name="Ground"   type="ground"   size="lg" />}
+            <div className="flex items-end justify-center gap-6 flex-wrap">
+              {building.tanks.map((t) => (
+                <TankVisual key={t.id} level={t.currentLevel} capacity={t.capacity} name={t.name} type={t.type} size="lg" />
+              ))}
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
               {building.tanks.map((t) => (
                 <div key={t.id} className="rounded-xl p-3" style={rowStyle}>
                   <div className="text-xs font-mono mb-1" style={{ color: "var(--text-muted)" }}>{t.name}</div>
@@ -178,8 +190,17 @@ export default function BuildingDetail({ building, onBack, onTogglePump, onToggl
                 <YAxis domain={[0, 100]} tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "monospace" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} tickFormatter={(v) => `${v}%`} />
                 <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "var(--text-secondary)", fontFamily: "monospace" }} />
                 <Legend wrapperStyle={{ fontSize: 11, fontFamily: "monospace" }} />
-                <Line type="monotone" dataKey="overhead" stroke="var(--accent-cyan)" strokeWidth={2} dot={false} name="Overhead %" />
-                <Line type="monotone" dataKey="ground"   stroke="#10b981" strokeWidth={2} dot={false} name="Ground %" />
+                {building.tanks.map((tank, index) => (
+                  <Line
+                    key={tank.id}
+                    type="monotone"
+                    dataKey={tank.id}
+                    stroke={tankSeriesColors[index % tankSeriesColors.length]}
+                    strokeWidth={2}
+                    dot={false}
+                    name={`${tank.name} %`}
+                  />
+                ))}
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -226,17 +247,15 @@ export default function BuildingDetail({ building, onBack, onTogglePump, onToggl
               <Sliders size={14} /> Threshold Settings
             </h2>
             <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: "Overhead Low %", key: "overheadLow", color: "var(--warning-text)", bg: "var(--warning-surface)", border: "var(--warning-border)" },
-                { label: "Overhead Critical %", key: "overheadCrit", color: "var(--danger-text)", bg: "var(--danger-surface)", border: "var(--danger-border)" },
-                { label: "Ground Low %", key: "groundLow", color: "var(--warning-text)", bg: "var(--warning-surface)", border: "var(--warning-border)" },
-                { label: "Ground Critical %", key: "groundCrit", color: "var(--danger-text)", bg: "var(--danger-surface)", border: "var(--danger-border)" },
-              ].map((field) => (
+              {building.tanks.flatMap((tank) => [
+                { label: `${tank.name} Low %`, key: `${tank.id}-low`, color: "var(--warning-text)", bg: "var(--warning-surface)", border: "var(--warning-border)" },
+                { label: `${tank.name} Critical %`, key: `${tank.id}-crit`, color: "var(--danger-text)", bg: "var(--danger-surface)", border: "var(--danger-border)" },
+              ]).map((field) => (
                 <div key={field.key}>
                   <label className="text-xs font-mono mb-1 block" style={{ color: "var(--text-muted)" }}>{field.label}</label>
                   <input
                     type="number"
-                    value={thresholds[field.key as keyof typeof thresholds]}
+                    value={thresholds[field.key] ?? 0}
                     onChange={(e) => setThresholds((prev) => ({ ...prev, [field.key]: Number(e.target.value) }))}
                     min="0" max="100"
                     className="w-full px-3 py-2 rounded-xl text-sm font-mono outline-none"

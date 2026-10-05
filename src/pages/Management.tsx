@@ -286,7 +286,7 @@ export default function Management({ buildings, onAddToast }: ManagementProps) {
             )}
             {modal.type === "tank" && (
               <>
-                <FieldRow label="Tank Name"><input style={inputStyle} defaultValue={(modal.item?.name as string) ?? ""} placeholder="e.g. Overhead Tank" /></FieldRow>
+                <FieldRow label="Tank Name"><input style={inputStyle} defaultValue={(modal.item?.name as string) ?? ""} placeholder="e.g. Domestic" /></FieldRow>
                 <FieldRow label="Type">
                   <select style={inputStyle} defaultValue={(modal.item?.type as string) ?? "overhead"}>
                     <option value="overhead">Overhead</option>
