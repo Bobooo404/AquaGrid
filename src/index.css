@@ -1,21 +1,21 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-bg-primary: #f0f7ff;
-  --color-bg-secondary: #e0efff;
-  --color-bg-card: #ffffff;
-  --color-bg-card-hover: #e8f4ff;
-  --color-border: #bfdbfe;
-  --color-border-bright: #93c5fd;
-  --color-accent-cyan: #0ea5e9;
-  --color-accent-blue: #2563eb;
-  --color-accent-glow: #0ea5e940;
+  --color-bg-primary: #e8e6df;
+  --color-bg-secondary: #dfddd5;
+  --color-bg-card: #f0efe9;
+  --color-bg-card-hover: #e7e5dd;
+  --color-border: #d2cfc5;
+  --color-border-bright: #bdb9ad;
+  --color-accent-cyan: #43869a;
+  --color-accent-blue: #3f7187;
+  --color-accent-glow: #43869a40;
   --color-water-full: #0ea5e9;
   --color-water-low: #f97316;
   --color-water-critical: #ef4444;
-  --color-text-primary: #1e3a5f;
-  --color-text-secondary: #3b6fa0;
-  --color-text-muted: #7ba8cc;
+  --color-text-primary: #303a3d;
+  --color-text-secondary: #566369;
+  --color-text-muted: #6b7679;
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
@@ -24,21 +24,25 @@
 }
 
 :root {
-  --bg-primary: #f0f7ff;
-  --bg-secondary: #e0efff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #e8f4ff;
-  --bg-subtle: #eff6ff;
-  --bg-neutral: #f8fafc;
-  --border: #dbeafe;
-  --border-strong: #bfdbfe;
-  --border-neutral: #e2e8f0;
-  --accent-cyan: #0ea5e9;
-  --accent-blue: #2563eb;
-  --text-primary: #1e3a5f;
-  --text-secondary: #3b6fa0;
-  --text-muted: #7ba8cc;
-  --surface-shadow: rgba(14, 165, 233, 0.08);
+  --bg-primary: #e8e6df;
+  --bg-secondary: #dfddd5;
+  --bg-card: #f0efe9;
+  --bg-card-hover: #e7e5dd;
+  --bg-subtle: #e1dfd7;
+  --bg-neutral: #e6e4dd;
+  --border: #d2cfc5;
+  --border-strong: #bdb9ad;
+  --border-neutral: #d2cfc5;
+  --accent-cyan: #43869a;
+  --accent-blue: #3f7187;
+  --text-primary: #303a3d;
+  --text-secondary: #566369;
+  --text-muted: #6b7679;
+  --surface-shadow-soft: rgba(42, 51, 54, 0.06);
+  --surface-shadow: rgba(42, 51, 54, 0.12);
+  --surface-shadow-strong: rgba(42, 51, 54, 0.16);
+  --ambient-glow: rgba(83, 130, 144, 0.06);
+  --ambient-glow-secondary: rgba(108, 126, 132, 0.05);
   --danger-surface: #fef2f2;
   --danger-border: #fca5a5;
   --danger-text: #dc2626;
@@ -50,12 +54,13 @@
   --success-text: #16a34a;
   --info-surface: #e0f2fe;
   --purple-surface: #f5f3ff;
-  --tank-shell: #edf7ff;
-  --tank-inner-border: #93c5fd;
-  --tank-tick: #3b6fa0;
+  --tank-shell: #e2e1da;
+  --tank-inner-border: #9db8bd;
+  --tank-tick: #42626b;
   --tank-label: #ffffff;
   --tank-label-stroke: rgba(15, 35, 58, 0.78);
-  --tank-fitting: #31577b;
+  --tank-fitting: #49666e;
+  color-scheme: light;
 }
 
 [data-theme="dark"] {
@@ -73,7 +78,11 @@
   --text-primary: #e7f2ff;
   --text-secondary: #b8d3ed;
   --text-muted: #7fa5c8;
+  --surface-shadow-soft: rgba(0, 0, 0, 0.18);
   --surface-shadow: rgba(0, 0, 0, 0.28);
+  --surface-shadow-strong: rgba(0, 0, 0, 0.38);
+  --ambient-glow: rgba(56, 189, 248, 0.14);
+  --ambient-glow-secondary: rgba(96, 165, 250, 0.10);
   --danger-surface: rgba(239, 68, 68, 0.12);
   --danger-border: rgba(248, 113, 113, 0.48);
   --danger-text: #f87171;
@@ -103,7 +112,9 @@
   border: 1px solid var(--border);
 }
 
-[data-theme="dark"] .hover\:bg-blue-50:hover { background-color: var(--bg-card-hover); }
+[data-theme="light"] .hover\:bg-blue-50:hover,
+[data-theme="light"] .hover\:bg-blue-100:hover,
+[data-theme="dark"] .hover\:bg-blue-50:hover,
 [data-theme="dark"] .hover\:bg-blue-100:hover { background-color: var(--bg-card-hover); }
 [data-theme="dark"] .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.12); }
 
@@ -118,8 +129,8 @@ html, body, #root {
 }
 
 body {
-  background-color: #f0f7ff;
-  color: #1e3a5f;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -133,18 +144,18 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #bfdbfe;
+  background: var(--border-strong);
   border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #93c5fd;
+  background: var(--border-strong);
 }
 
 /* Light card */
 .glass-card {
-  background: #ffffff;
-  border: 1px solid #dbeafe;
-  box-shadow: 0 1px 8px rgba(14, 165, 233, 0.06), 0 0 0 0 transparent;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 8px var(--surface-shadow-soft), 0 0 0 0 transparent;
 }
 
 /* Water glow effect */

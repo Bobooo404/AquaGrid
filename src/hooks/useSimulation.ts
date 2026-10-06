@@ -40,7 +40,7 @@ function autoControl(building: Building): Building {
 
 export function useSimulation() {
   const [buildings, setBuildings] = useState<Building[]>(initialBuildings);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>(() => generateAlerts(initialBuildings));
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [toasts, setToasts] = useState<{ id: string; message: string; type: "success" | "warning" | "error" }[]>([]);
   const [wsConnected, setWsConnected] = useState(false);
@@ -85,9 +85,6 @@ export function useSimulation() {
 
           return autoControl(updatedBuilding);
         });
-
-        const newAlerts = generateAlerts(updated);
-        setAlerts(newAlerts);
 
         return updated;
       });

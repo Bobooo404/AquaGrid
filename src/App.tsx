@@ -5,28 +5,20 @@ import Dashboard from "./pages/Dashboard";
 import BuildingDetail from "./pages/BuildingDetail";
 import AlertsPage from "./pages/Alerts";
 import LogsPage from "./pages/Logs";
-import Management from "./pages/Management";
 import { useSimulation } from "./hooks/useSimulation";
 import Login from "./pages/Login";
 import { loadSession, logout as clearSession, type AuthUser } from "./auth/auth";
 
-type Page = "dashboard" | "buildings" | "alerts" | "logs" | "management";
+type Page = "dashboard" | "buildings" | "alerts" | "logs";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>("dashboard");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("aquaflow-theme") === "dark");
   const [detailBuildingId, setDetailBuildingId] = useState<string | null>(null);
-  const [selectedSite, setSelectedSite] = useState<string | null>(null);
-  const [showBrandFooter, setShowBrandFooter] = useState(false);
+  const [detailBuildingName, setDetailBuildingName] = useState<string | null>(null);
+  const [selectedSite, setSelectedSite] = useState<string | null>(() => localStorage.getItem("aquaflow-site"));
   const [user, setUser] = useState<AuthUser | null>(() => loadSession());
-
-  useEffect(() => {
-    const onScroll = () => setShowBrandFooter(window.scrollY > 12);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const {
     buildings,
@@ -34,9 +26,7 @@ export default function App() {
     logs,
     wsConnected,
     acknowledgeAlert,
-    togglePump,
     toggleValve,
-    addToast,
   } = useSimulation();
 
   const unreadAlerts = alerts.filter((a) => !a.acknowledged).length;
@@ -45,15 +35,25 @@ export default function App() {
     localStorage.setItem("aquaflow-theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  const handleViewBuilding = (id: string) => {
+  const handleViewBuilding = (id: string, name: string) => {
     setDetailBuildingId(id);
+    setDetailBuildingName(name);
     setCurrentPage("buildings");
+  };
+
+  const handleLogin = (u: AuthUser) => {
+    setUser(u);
+    setSelectedSite(null);
+    localStorage.removeItem("aquaflow-site");
   };
 
   const handleLogout = () => {
     clearSession();
+    localStorage.removeItem("aquaflow-site");
     setUser(null);
+    setSelectedSite(null);
     setDetailBuildingId(null);
+    setDetailBuildingName(null);
     setCurrentPage("dashboard");
   };
 
@@ -69,7 +69,7 @@ export default function App() {
         <Login
           darkMode={darkMode}
           onToggleDark={() => setDarkMode((d) => !d)}
-          onLogin={(u) => setUser(u)}
+          onLogin={handleLogin}
         />
       </div>
     );
@@ -81,48 +81,17 @@ export default function App() {
       className="flex h-screen overflow-hidden bg-app text-primary"
       style={{ fontFamily: "'Inter', 'DM Sans', system-ui, sans-serif" }}
     >
-      {showBrandFooter && (
-        <div
-          className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 text-xs font-medium tracking-[0.12em] transition-opacity duration-200"
-          style={{ color: "var(--text-muted)", opacity: showBrandFooter ? 1 : 0 }}
-        >
-          <span style={{ color: "var(--text-muted)" }}>Product by</span>
-          <span
-            style={{
-              background: "linear-gradient(90deg, #ff2227 0%, #9f0000 100%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            MANU
-          </span>
-          <span
-            style={{
-              background: "radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.49) 0%, rgba(60, 64, 65, 1) 100%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Robotics
-          </span>
-        </div>
-      )}
       {/* Sidebar */}
-      <div className={`flex-shrink-0 h-full ${sidebarCollapsed ? "hidden md:flex" : "flex"}`}
-        style={{ display: sidebarCollapsed ? undefined : "flex" }}
+      <div
+        className={`${mobileSidebarOpen ? "flex" : "hidden md:flex"} fixed inset-y-0 left-0 z-40 h-full flex-shrink-0 md:relative md:inset-auto md:z-auto`}
       >
         <Sidebar
           currentPage={currentPage}
           onNavigate={(page) => {
             setCurrentPage(page);
             if (page !== "buildings") setDetailBuildingId(null);
+            setMobileSidebarOpen(false);
           }}
-          collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed((c) => !c)}
           alertCount={unreadAlerts}
           user={user}
           onLogout={handleLogout}
@@ -137,12 +106,14 @@ export default function App() {
           selectedSite={selectedSite}
           onSelectSite={(site) => {
             setSelectedSite(site);
+            localStorage.setItem("aquaflow-site", site);
             setDetailBuildingId(null);
             setCurrentPage("dashboard");
           }}
           darkMode={darkMode}
           onToggleDark={() => setDarkMode((d) => !d)}
-          onToggleSidebar={() => setSidebarCollapsed((c) => !c)}
+          sidebarOpen={mobileSidebarOpen}
+          onToggleSidebar={() => setMobileSidebarOpen((open) => !open)}
           user={user}
         />
 
@@ -160,10 +131,9 @@ export default function App() {
           {currentPage === "buildings" && (
             detailBuilding ? (
               <BuildingDetail
-                building={detailBuilding}
+                building={detailBuildingName ? { ...detailBuilding, name: detailBuildingName } : detailBuilding}
                 role={user.role}
                 onBack={() => setDetailBuildingId(null)}
-                onTogglePump={togglePump}
                 onToggleValve={toggleValve}
               />
             ) : (
@@ -181,10 +151,6 @@ export default function App() {
           )}
 
           {currentPage === "logs" && <LogsPage logs={logs} />}
-
-          {currentPage === "management" && (
-            <Management buildings={buildings} onAddToast={addToast} />
-          )}
         </main>
       </div>
 

@@ -21,7 +21,7 @@ const pipelineColors: Record<string, string> = {
   clean: "var(--accent-cyan)", recycled: "#10b981", sewage: "#8b5cf6",
 };
 
-const cardStyle = { background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 1px 8px rgba(14,165,233,0.05)" };
+const cardStyle = { background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 1px 8px var(--surface-shadow-soft)" };
 const inputStyle = {
   background: "var(--bg-primary)",
   border: "1px solid var(--border-strong)",
@@ -36,7 +36,7 @@ const inputStyle = {
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(30,58,138,0.12)", backdropFilter: "blur(4px)" }}>
-      <div className="rounded-2xl w-full max-w-md alert-enter" style={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)", boxShadow: "0 16px 48px rgba(14,165,233,0.15)" }}>
+      <div className="rounded-2xl w-full max-w-md alert-enter" style={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)", boxShadow: "0 16px 48px var(--surface-shadow-strong)" }}>
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <h3 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>{title}</h3>
           <button onClick={onClose} className="hover:opacity-60 transition-opacity" style={{ color: "var(--text-muted)" }}>

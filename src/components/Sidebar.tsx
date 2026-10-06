@@ -2,24 +2,19 @@ import { useEffect, useRef } from "react";
 import { animate } from "animejs";
 import {
   LayoutDashboard,
-  Building2,
   Bell,
   ScrollText,
-  Settings,
+  User,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import aquagridLogo from "../assets/aquagrid-logo.png";
 import type { AuthUser } from "../auth/auth";
 
-type Page = "dashboard" | "buildings" | "alerts" | "logs" | "management";
+type Page = "dashboard" | "buildings" | "alerts" | "logs";
 
 interface SidebarProps {
   currentPage: Page;
   onNavigate: (page: Page) => void;
-  collapsed: boolean;
-  onToggle: () => void;
   alertCount: number;
   user: AuthUser;
   onLogout: () => void;
@@ -27,13 +22,11 @@ interface SidebarProps {
 
 const navItems: { id: Page; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "buildings", label: "Buildings", icon: Building2 },
   { id: "alerts", label: "Alerts", icon: Bell },
   { id: "logs", label: "Event Logs", icon: ScrollText },
-  { id: "management", label: "Management", icon: Settings },
 ];
 
-export default function Sidebar({ currentPage, onNavigate, collapsed, onToggle, alertCount, user, onLogout }: SidebarProps) {
+export default function Sidebar({ currentPage, onNavigate, alertCount, user, onLogout }: SidebarProps) {
   const logoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,10 +44,10 @@ export default function Sidebar({ currentPage, onNavigate, collapsed, onToggle, 
     <aside
       className="relative flex flex-col h-full transition-all duration-300"
       style={{
-        width: collapsed ? "64px" : "220px",
+        width: "256px",
         background: "var(--bg-card)",
         borderRight: "1px solid var(--border)",
-        boxShadow: "2px 0 12px rgba(14,165,233,0.06)",
+        boxShadow: "2px 0 12px var(--surface-shadow-soft)",
       }}
     >
       {/* Logo */}
@@ -63,25 +56,17 @@ export default function Sidebar({ currentPage, onNavigate, collapsed, onToggle, 
         className="flex items-center gap-3 px-4 py-5"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
-        <div
-          className="flex-shrink-0 flex items-center justify-center overflow-hidden rounded-xl"
-          style={{ width: 36, height: 36, background: "var(--bg-subtle)", border: "1px solid var(--border-strong)", padding: 3 }}
-        >
-          <img
-            src={aquagridLogo}
-            alt="AquaGrid"
-            className="w-full h-full object-contain"
-            style={{ maxWidth: "100%", maxHeight: "100%" }}
-          />
-        </div>
-        {!collapsed && (
-          <div>
-            <div className="text-sm font-bold tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}>
-              AquaGrid
-            </div>
-            <div className="text-xs" style={{ color: "var(--text-muted)" }}></div>
+        <img
+          src={aquagridLogo}
+          alt="AquaGrid"
+          className="flex-shrink-0 h-[37px] w-auto"
+        />
+        <div>
+          <div className="text-sm font-bold tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}>
+            AquaGrid
           </div>
-        )}
+          <div className="text-xs" style={{ color: "var(--text-muted)" }}></div>
+        </div>
       </div>
 
       {/* Nav */}
@@ -99,7 +84,6 @@ export default function Sidebar({ currentPage, onNavigate, collapsed, onToggle, 
                 border: active ? "1px solid var(--border-strong)" : "1px solid transparent",
                 color: active ? "var(--accent-blue)" : "var(--text-secondary)",
               }}
-              title={collapsed ? item.label : undefined}
             >
               <div className="relative flex-shrink-0">
                 <Icon size={18} />
@@ -117,9 +101,7 @@ export default function Sidebar({ currentPage, onNavigate, collapsed, onToggle, 
                   </span>
                 )}
               </div>
-              {!collapsed && (
-                <span className="text-sm font-medium">{item.label}</span>
-              )}
+              <span className="text-sm font-medium">{item.label}</span>
               {active && (
                 <div
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r"
@@ -135,74 +117,40 @@ export default function Sidebar({ currentPage, onNavigate, collapsed, onToggle, 
       <div style={{ borderTop: "1px solid var(--border)" }} className="p-3 flex flex-col gap-2">
         <div
           className="flex items-center gap-2 px-2 py-2 rounded-xl"
-          title={collapsed ? `${user.name} · ${user.email}` : undefined}
         >
           <div
-            className="flex-shrink-0 flex items-center justify-center rounded-full overflow-hidden"
-            style={{ width: 28, height: 28, background: "var(--bg-subtle)", border: "1px solid var(--border-strong)", padding: 2 }}
+            className="flex-shrink-0 flex items-center justify-center rounded-full"
+            style={{ width: 28, height: 28, background: "var(--bg-subtle)", border: "1px solid var(--border-strong)" }}
           >
-            <img
-              src={aquagridLogo}
-              alt={user.name}
-              className="w-full h-full rounded-full object-contain"
-            />
+            <User size={14} style={{ color: "var(--text-muted)" }} />
           </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold truncate" style={{ color: "var(--text-primary)" }}>{user.name}</div>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span
-                  className="text-[9px] font-mono font-bold uppercase px-1.5 py-px rounded"
-                  style={
-                    user.role === "admin"
-                      ? { background: "var(--warning-surface)", color: "var(--warning-text)", border: "1px solid var(--warning-border)" }
-                      : { background: "var(--info-surface)", color: "var(--accent-blue)", border: "1px solid var(--border-strong)" }
-                  }
-                >
-                  {user.role}
-                </span>
-                <span className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{user.email}</span>
-              </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-semibold truncate" style={{ color: "var(--text-primary)" }}>{user.name}</div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span
+                className="text-[9px] font-mono font-bold uppercase px-1.5 py-px rounded"
+                style={
+                  user.role === "admin"
+                    ? { background: "var(--warning-surface)", color: "var(--warning-text)", border: "1px solid var(--warning-border)" }
+                    : { background: "var(--info-surface)", color: "var(--accent-blue)", border: "1px solid var(--border-strong)" }
+                }
+              >
+                {user.role}
+              </span>
+              <span className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{user.email}</span>
             </div>
-          )}
-        </div>
-        {!collapsed && (
+          </div>
           <button
             onClick={onLogout}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm hover:bg-red-50 hover:text-red-500 transition-colors"
-            style={{ color: "var(--text-muted)" }}
-          >
-            <LogOut size={14} />
-            <span className="text-xs">Logout</span>
-          </button>
-        )}
-        {collapsed && (
-          <button
-            onClick={onLogout}
-            title="Logout"
-            aria-label="Logout"
-            className="flex items-center justify-center px-2 py-2 rounded-xl hover:bg-red-50 transition-colors"
-            style={{ color: "var(--text-muted)" }}
+            className="flex-shrink-0 p-2 rounded-lg transition-colors hover:bg-blue-50"
+            style={{ color: "var(--text-secondary)" }}
+            title="Log out"
+            aria-label="Log out"
           >
             <LogOut size={16} />
           </button>
-        )}
+        </div>
       </div>
-
-      {/* Collapse toggle */}
-      <button
-        onClick={onToggle}
-        className="absolute -right-3 top-16 flex items-center justify-center rounded-full z-10 transition-all hover:scale-110"
-        style={{
-          width: 24, height: 24,
-          background: "var(--bg-card)",
-          border: "1px solid var(--border-strong)",
-          color: "var(--text-secondary)",
-          boxShadow: "0 2px 6px rgba(14,165,233,0.12)",
-        }}
-      >
-        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
-      </button>
     </aside>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, RotateCw, Circle, Sliders, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Circle, Sliders, AlertTriangle } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
@@ -11,7 +11,6 @@ interface BuildingDetailProps {
   building: Building;
   role: Role;
   onBack: () => void;
-  onTogglePump: (buildingId: string, pumpId: string) => void;
   onToggleValve: (buildingId: string, valveId: string) => void;
 }
 
@@ -41,9 +40,8 @@ const pipelineColors: Record<string, string> = {
   sewage: "#8b5cf6",
 };
 
-export default function BuildingDetail({ building, role, onBack, onTogglePump, onToggleValve }: BuildingDetailProps) {
+export default function BuildingDetail({ building, role, onBack, onToggleValve }: BuildingDetailProps) {
   const isAdmin = role === "admin";
-  const [confirmPump, setConfirmPump] = useState<string | null>(null);
   const [confirmValve, setConfirmValve] = useState<string | null>(null);
   const [thresholds, setThresholds] = useState<Record<string, number>>(() =>
     Object.fromEntries(
@@ -56,22 +54,21 @@ export default function BuildingDetail({ building, role, onBack, onTogglePump, o
 
   const history = generateHistory(building.tanks);
 
-  const cardStyle = { background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 1px 8px rgba(14,165,233,0.06)" };
+  const cardStyle = { background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 1px 8px var(--surface-shadow-soft)" };
   const rowStyle  = { background: "var(--bg-primary)", border: "1px solid var(--border)" };
 
   return (
     <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto" style={{ background: "var(--bg-primary)" }}>
       {/* Header */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <button onClick={onBack} className="flex items-center gap-2 text-sm transition-colors hover:opacity-80" style={{ color: "var(--accent-cyan)" }}>
+      <div>
+        <button onClick={onBack} className="flex items-center gap-2 text-sm transition-colors hover:opacity-80 w-fit px-3 py-1.5 rounded-xl" style={{ background: "var(--info-surface)", color: "var(--accent-cyan)" }}>
           <ArrowLeft size={16} /> Back
         </button>
-        <div>
+        <div className="flex items-center justify-between gap-4 flex-wrap mt-3">
           <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>{building.name}</h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>{building.location} · {building.floors} floors</p>
-        </div>
-        <div className="ml-auto text-xs font-mono" style={{ color: "var(--text-muted)" }}>
-          Last updated: {building.lastUpdated.toLocaleTimeString()}
+          <div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+            Last updated: {building.lastUpdated.toLocaleTimeString()}
+          </div>
         </div>
       </div>
 
@@ -84,12 +81,13 @@ export default function BuildingDetail({ building, role, onBack, onTogglePump, o
         </div>
       )}
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
       {/* Tanks */}
       <div className="rounded-2xl p-6" style={cardStyle}>
         <h2 className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>Tank Levels</h2>
         <div className="grid grid-cols-3 items-end gap-2">
           {building.tanks.map((t) => (
-            <TankVisual key={t.id} level={t.currentLevel} capacity={t.capacity} name={t.name} type={t.type} size="md" />
+            <TankVisual key={t.id} level={t.currentLevel} capacity={t.capacity} name={t.name} type={t.type} size="md" showVolume={false} />
           ))}
         </div>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -127,7 +125,7 @@ export default function BuildingDetail({ building, role, onBack, onTogglePump, o
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ background: pipelineColors[pl.type], opacity: pl.isActive ? 1 : 0.3 }} />
                 <span className="text-xs font-mono font-bold" style={{ color: pipelineColors[pl.type] }}>
-                  {pl.type.toUpperCase()}
+                  {pl.type === "sewage" ? "FLUSHING" : pl.type.toUpperCase()}
                 </span>
               </div>
               <div>
@@ -148,50 +146,38 @@ export default function BuildingDetail({ building, role, onBack, onTogglePump, o
           ))}
         </div>
       </div>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column */}
-        <div className="flex flex-col gap-4 lg:col-span-1">
-          {/* Pumps */}
-          {isAdmin && (
-          <div className="rounded-2xl p-5" style={cardStyle}>
-            <h2 className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>Pump Controls</h2>
-            <div className="flex flex-col gap-2">
-              {building.pumps.map((pump) => (
-                <div key={pump.id} className="rounded-xl p-3 flex items-center justify-between" style={rowStyle}>
-                  <div className="flex items-center gap-2">
-                    <RotateCw size={14}
-                      className={pump.status === "running" ? "pump-running" : ""}
-                      style={{ color: pump.status === "fault" ? "#ef4444" : pump.status === "running" ? "var(--accent-cyan)" : "var(--border-strong)" }}
-                    />
-                    <div>
-                      <div className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>{pump.name}</div>
-                      <div className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{pump.flowRate} L/min · {pump.runtime}h today</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {pump.manualOverride && <span className="text-xs font-mono" style={{ color: "var(--warning-text)" }}>MANUAL</span>}
-                    <button
-                      onClick={() => setConfirmPump(pump.id)}
-                      disabled={pump.status === "fault"}
-                      className="px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all"
-                      style={{
-                        background: pump.status === "running" ? "var(--danger-surface)" : pump.status === "fault" ? "var(--bg-neutral)" : "var(--bg-subtle)",
-                        color:      pump.status === "running" ? "var(--danger-text)" : pump.status === "fault" ? "#cbd5e1" : "var(--accent-blue)",
-                        border:     `1px solid ${pump.status === "running" ? "var(--danger-border)" : pump.status === "fault" ? "var(--border-neutral)" : "var(--border-strong)"}`,
-                        cursor: pump.status === "fault" ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      {pump.status === "running" ? "STOP" : pump.status === "fault" ? "FAULT" : "START"}
-                    </button>
-                  </div>
-                </div>
+      <div className="flex flex-col gap-6">
+        {/* Tank Level History - stretched full width */}
+        {isAdmin && (
+        <div className="rounded-2xl p-5" style={cardStyle}>
+          <h2 className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>Tank Level History (Last 30 min)</h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={history}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="time" tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "monospace" }} interval={4} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
+              <YAxis domain={[0, 100]} tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "monospace" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} tickFormatter={(v) => `${v}%`} />
+              <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "var(--text-secondary)", fontFamily: "monospace" }} />
+              <Legend wrapperStyle={{ fontSize: 11, fontFamily: "monospace" }} />
+              {building.tanks.map((tank, index) => (
+                <Line
+                  key={tank.id}
+                  type="monotone"
+                  dataKey={tank.id}
+                  stroke={tankSeriesColors[index % tankSeriesColors.length]}
+                  strokeWidth={2}
+                  dot={false}
+                  name={`${tank.name} %`}
+                />
               ))}
-            </div>
-          </div>
-          )}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        )}
 
-          {/* Valves */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Valve Controls */}
           {isAdmin && (
           <div className="rounded-2xl p-5" style={cardStyle}>
             <h2 className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>Valve Controls</h2>
@@ -228,38 +214,8 @@ export default function BuildingDetail({ building, role, onBack, onTogglePump, o
             </div>
           </div>
           )}
-        </div>
 
-        {/* Right column */}
-        <div className="flex flex-col gap-4 lg:col-span-2">
-          {/* Chart */}
-          {isAdmin && (
-          <div className="rounded-2xl p-5" style={cardStyle}>
-            <h2 className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>Tank Level History (Last 30 min)</h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={history}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="time" tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "monospace" }} interval={4} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "monospace" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} tickFormatter={(v) => `${v}%`} />
-                <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "var(--text-secondary)", fontFamily: "monospace" }} />
-                <Legend wrapperStyle={{ fontSize: 11, fontFamily: "monospace" }} />
-                {building.tanks.map((tank, index) => (
-                  <Line
-                    key={tank.id}
-                    type="monotone"
-                    dataKey={tank.id}
-                    stroke={tankSeriesColors[index % tankSeriesColors.length]}
-                    strokeWidth={2}
-                    dot={false}
-                    name={`${tank.name} %`}
-                  />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          )}
-
-          {/* Thresholds */}
+        {/* Thresholds */}
           {isAdmin && (
           <div className="rounded-2xl p-5" style={cardStyle}>
             <h2 className="text-xs font-mono uppercase tracking-widest mb-4 flex items-center gap-2" style={{ color: "var(--text-muted)" }}>
@@ -295,21 +251,19 @@ export default function BuildingDetail({ building, role, onBack, onTogglePump, o
       </div>
 
       {/* Confirm Modal */}
-      {isAdmin && (confirmPump || confirmValve) && (
+      {isAdmin && confirmValve && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(30,58,138,0.15)", backdropFilter: "blur(4px)" }}>
-          <div className="rounded-2xl p-6 max-w-sm w-full mx-4 alert-enter" style={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)", boxShadow: "0 16px 48px rgba(14,165,233,0.15)" }}>
+          <div className="rounded-2xl p-6 max-w-sm w-full mx-4 alert-enter" style={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)", boxShadow: "0 16px 48px var(--surface-shadow-strong)" }}>
             <div className="flex items-center gap-3 mb-4">
               <AlertTriangle size={20} style={{ color: "var(--warning-text)" }} />
               <h3 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>Manual Override</h3>
             </div>
             <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
-              {confirmPump
-                ? `Toggle pump override for "${building.pumps.find((p) => p.id === confirmPump)?.name}"?`
-                : `Toggle valve override for "${building.valves.find((v) => v.id === confirmValve)?.name}"?`}
+              {`Toggle valve override for "${building.valves.find((v) => v.id === confirmValve)?.name}"?`}
             </p>
             <div className="flex gap-3">
               <button
-                onClick={() => { setConfirmPump(null); setConfirmValve(null); }}
+                onClick={() => setConfirmValve(null)}
                 className="flex-1 px-4 py-2 rounded-xl text-sm font-mono hover:bg-blue-50 transition-colors"
                 style={{ background: "var(--bg-primary)", border: "1px solid var(--border-strong)", color: "var(--text-secondary)" }}
               >
@@ -317,9 +271,8 @@ export default function BuildingDetail({ building, role, onBack, onTogglePump, o
               </button>
               <button
                 onClick={() => {
-                  if (confirmPump) onTogglePump(building.id, confirmPump);
                   if (confirmValve) onToggleValve(building.id, confirmValve);
-                  setConfirmPump(null); setConfirmValve(null);
+                  setConfirmValve(null);
                 }}
                 className="flex-1 px-4 py-2 rounded-xl text-sm font-mono font-bold text-white transition-all hover:opacity-90"
                 style={{ background: "linear-gradient(90deg, var(--accent-cyan), var(--accent-blue))" }}

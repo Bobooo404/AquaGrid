@@ -13,13 +13,42 @@ const severityConfig = {
   info:     { color: "var(--accent-cyan)", bg: "var(--bg-subtle)",  border: "var(--border-strong)", icon: Info,          label: "INFO"     },
 };
 
+type DateRange = "all" | "today" | "yesterday" | "week" | "month";
+
+const dateRanges: { id: DateRange; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "today", label: "Today" },
+  { id: "yesterday", label: "Yesterday" },
+  { id: "week", label: "Last Week" },
+  { id: "month", label: "Last Month" },
+];
+
+const DAY_MS = 86400000;
+
+function inDateRange(ts: Date, range: DateRange): boolean {
+  if (range === "all") return true;
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const t = ts.getTime();
+  const todayStart = startOfToday.getTime();
+  switch (range) {
+    case "today":    return t >= todayStart;
+    case "yesterday": return t >= todayStart - DAY_MS && t < todayStart;
+    case "week":     return t >= todayStart - 7 * DAY_MS && t < todayStart - DAY_MS;
+    case "month":    return t >= todayStart - 30 * DAY_MS && t < todayStart - 7 * DAY_MS;
+    default:         return true;
+  }
+}
+
 export default function AlertsPage({ alerts, onAcknowledge }: AlertsPageProps) {
   const [filter, setFilter] = useState<"all" | "critical" | "warning" | "info">("all");
+  const [dateRange, setDateRange] = useState<DateRange>("all");
   const [showAcknowledged, setShowAcknowledged] = useState(false);
 
   const filtered = alerts.filter((a) => {
     if (!showAcknowledged && a.acknowledged) return false;
     if (filter !== "all" && a.severity !== filter) return false;
+    if (!inDateRange(a.timestamp, dateRange)) return false;
     return true;
   });
 
@@ -41,23 +70,55 @@ export default function AlertsPage({ alerts, onAcknowledge }: AlertsPageProps) {
         </label>
       </div>
 
-      {/* Filter tabs */}
+      {/* Severity dropdown */}
+      <div className="flex items-center gap-3">
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as typeof filter)}
+          className="text-sm cursor-pointer"
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border)",
+            color: "var(--text-primary)",
+            borderRadius: 10,
+            padding: "6px 12px",
+            fontSize: 13,
+            outline: "none",
+          }}
+        >
+          <option value="all">All Severities</option>
+          <option value="critical">Critical</option>
+          <option value="warning">Warning</option>
+          <option value="info">Info</option>
+        </select>
+      </div>
+
+      {/* Date range bar */}
       <div className="flex items-center gap-2 flex-wrap">
-        {(["all", "critical", "warning", "info"] as const).map((f) => {
-          const active = filter === f;
-          const cfg = f !== "all" ? severityConfig[f] : null;
+        {dateRanges.map((r) => {
+          const active = dateRange === r.id;
+          const count = alerts.filter((a) => inDateRange(a.timestamp, r.id)).length;
           return (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className="px-4 py-1.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all"
+              key={r.id}
+              onClick={() => setDateRange(r.id)}
+              className="px-4 py-1.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-all flex items-center gap-2"
               style={{
-                background: active ? (cfg ? cfg.bg : "var(--bg-subtle)") : "var(--bg-card)",
-                color:      active ? (cfg ? cfg.color : "var(--accent-blue)") : "var(--text-muted)",
-                border:     `1px solid ${active ? (cfg ? cfg.border : "var(--border-strong)") : "var(--border)"}`,
+                background: active ? "var(--accent-blue)" : "var(--bg-card)",
+                color: active ? "#fff" : "var(--text-muted)",
+                border: `1px solid ${active ? "var(--accent-blue)" : "var(--border)"}`,
               }}
             >
-              {f}
+              {r.label}
+              <span
+                className="px-1.5 py-0.5 rounded-md text-[10px]"
+                style={{
+                  background: active ? "rgba(255,255,255,0.2)" : "var(--bg-subtle)",
+                  color: active ? "#fff" : "var(--text-secondary)",
+                }}
+              >
+                {count}
+              </span>
             </button>
           );
         })}

@@ -82,8 +82,8 @@ export const initialBuildings: Building[] = [
         id: "b1-ot",
         name: "Domestic",
         type: "overhead",
-        capacity: 50000,
-        currentLevel: 72,
+        capacity: 1000,
+        currentLevel: 26,
         lowThreshold: 30,
         criticalThreshold: 15,
       },
@@ -91,7 +91,7 @@ export const initialBuildings: Building[] = [
         id: "b1-gt",
         name: "Drinking",
         type: "ground",
-        capacity: 120000,
+        capacity: 1000,
         currentLevel: 85,
         lowThreshold: 25,
         criticalThreshold: 10,
@@ -100,7 +100,7 @@ export const initialBuildings: Building[] = [
         id: "b1-gt-2",
         name: "Flushing",
         type: "ground",
-        capacity: 90000,
+        capacity: 1000,
         currentLevel: 64,
         lowThreshold: 25,
         criticalThreshold: 10,
@@ -164,7 +164,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b1-pl3",
-        name: "Sewage Drain",
+        name: "Flushing Drain",
         type: "sewage",
         isActive: true,
         flowRate: 180,
@@ -182,7 +182,7 @@ export const initialBuildings: Building[] = [
         id: "b2-ot",
         name: "Domestic",
         type: "overhead",
-        capacity: 80000,
+        capacity: 1000,
         currentLevel: 23,
         lowThreshold: 30,
         criticalThreshold: 15,
@@ -191,7 +191,7 @@ export const initialBuildings: Building[] = [
         id: "b2-gt",
         name: "Drinking",
         type: "ground",
-        capacity: 200000,
+        capacity: 1000,
         currentLevel: 61,
         lowThreshold: 25,
         criticalThreshold: 10,
@@ -200,7 +200,7 @@ export const initialBuildings: Building[] = [
         id: "b2-gt-2",
         name: "Flushing",
         type: "ground",
-        capacity: 140000,
+        capacity: 1000,
         currentLevel: 76,
         lowThreshold: 25,
         criticalThreshold: 10,
@@ -239,6 +239,13 @@ export const initialBuildings: Building[] = [
         status: "open",
         manualOverride: false,
       },
+      {
+        id: "b2-v3",
+        name: "Outlet Valve",
+        pipelineType: "clean",
+        status: "open",
+        manualOverride: false,
+      },
     ],
     pipelines: [
       {
@@ -257,7 +264,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b2-pl3",
-        name: "Sewage Drain",
+        name: "Flushing Drain",
         type: "sewage",
         isActive: true,
         flowRate: 310,
@@ -275,7 +282,7 @@ export const initialBuildings: Building[] = [
         id: "b3-ot",
         name: "Domestic",
         type: "overhead",
-        capacity: 100000,
+        capacity: 1000,
         currentLevel: 91,
         lowThreshold: 40,
         criticalThreshold: 20,
@@ -284,7 +291,7 @@ export const initialBuildings: Building[] = [
         id: "b3-gt",
         name: "Drinking",
         type: "ground",
-        capacity: 300000,
+        capacity: 1000,
         currentLevel: 78,
         lowThreshold: 30,
         criticalThreshold: 15,
@@ -293,7 +300,7 @@ export const initialBuildings: Building[] = [
         id: "b3-gt-2",
         name: "Flushing",
         type: "ground",
-        capacity: 180000,
+        capacity: 1000,
         currentLevel: 83,
         lowThreshold: 30,
         criticalThreshold: 15,
@@ -365,7 +372,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b3-pl3",
-        name: "Sewage Drain",
+        name: "Flushing Drain",
         type: "sewage",
         isActive: true,
         flowRate: 420,
@@ -383,7 +390,7 @@ export const initialBuildings: Building[] = [
         id: "b4-ot",
         name: "Domestic",
         type: "overhead",
-        capacity: 60000,
+        capacity: 1000,
         currentLevel: 11,
         lowThreshold: 30,
         criticalThreshold: 15,
@@ -392,7 +399,7 @@ export const initialBuildings: Building[] = [
         id: "b4-gt",
         name: "Drinking",
         type: "ground",
-        capacity: 150000,
+        capacity: 1000,
         currentLevel: 38,
         lowThreshold: 25,
         criticalThreshold: 10,
@@ -401,7 +408,7 @@ export const initialBuildings: Building[] = [
         id: "b4-gt-2",
         name: "Flushing",
         type: "ground",
-        capacity: 100000,
+        capacity: 1000,
         currentLevel: 52,
         lowThreshold: 25,
         criticalThreshold: 10,
@@ -440,6 +447,13 @@ export const initialBuildings: Building[] = [
         status: "stuck",
         manualOverride: false,
       },
+      {
+        id: "b4-v3",
+        name: "Outlet Valve",
+        pipelineType: "clean",
+        status: "open",
+        manualOverride: false,
+      },
     ],
     pipelines: [
       {
@@ -458,7 +472,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b4-pl3",
-        name: "Sewage Drain",
+        name: "Flushing Drain",
         type: "sewage",
         isActive: true,
         flowRate: 210,
@@ -476,7 +490,7 @@ export const initialBuildings: Building[] = [
         id: "b5-ot",
         name: "Domestic",
         type: "overhead",
-        capacity: 25000,
+        capacity: 1000,
         currentLevel: 55,
         lowThreshold: 30,
         criticalThreshold: 15,
@@ -485,7 +499,7 @@ export const initialBuildings: Building[] = [
         id: "b5-gt",
         name: "Drinking",
         type: "ground",
-        capacity: 75000,
+        capacity: 1000,
         currentLevel: 67,
         lowThreshold: 25,
         criticalThreshold: 10,
@@ -494,7 +508,7 @@ export const initialBuildings: Building[] = [
         id: "b5-gt-2",
         name: "Flushing",
         type: "ground",
-        capacity: 50000,
+        capacity: 1000,
         currentLevel: 73,
         lowThreshold: 25,
         criticalThreshold: 10,
@@ -525,6 +539,13 @@ export const initialBuildings: Building[] = [
         status: "open",
         manualOverride: false,
       },
+      {
+        id: "b5-v3",
+        name: "Outlet Valve",
+        pipelineType: "clean",
+        status: "open",
+        manualOverride: false,
+      },
     ],
     pipelines: [
       {
@@ -543,7 +564,7 @@ export const initialBuildings: Building[] = [
       },
       {
         id: "b5-pl3",
-        name: "Sewage Drain",
+        name: "Flushing Drain",
         type: "sewage",
         isActive: true,
         flowRate: 90,
@@ -552,6 +573,32 @@ export const initialBuildings: Building[] = [
     lastUpdated: new Date(),
   },
 ]
+
+const DAY_MS = 86400000
+const MAX_ALERTS = 5
+const bucketDaysBack = [0, 1, 4, 18] // today, yesterday, last week, last month
+const alertTimestampCache = new Map<string, Date>()
+
+const hashId = (id: string): number => {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+const dummyTimestamp = (id: string, index: number): Date => {
+  const cached = alertTimestampCache.get(id)
+  if (cached) return cached
+  const now = new Date()
+  const startOfToday = new Date(now)
+  startOfToday.setHours(0, 0, 0, 0)
+  const daysBack = bucketDaysBack[index % bucketDaysBack.length]
+  const dayStart = startOfToday.getTime() - daysBack * DAY_MS
+  const span = daysBack === 0 ? Math.max(now.getTime() - dayStart, 3600000) : DAY_MS
+  const time = Math.min(dayStart + (hashId(id) % span), now.getTime())
+  const ts = new Date(time)
+  alertTimestampCache.set(id, ts)
+  return ts
+}
 
 export const generateAlerts = (buildings: Building[]): Alert[] => {
   const alerts: Alert[] = []
@@ -565,7 +612,7 @@ export const generateAlerts = (buildings: Building[]): Alert[] => {
           severity: "critical",
           type: "Low Level Critical",
           message: `${t.name} at ${t.currentLevel}% — CRITICAL threshold breached`,
-          timestamp: new Date(Date.now() - Math.random() * 600000),
+          timestamp: new Date(),
           acknowledged: false,
         })
       } else if (t.currentLevel <= t.lowThreshold) {
@@ -576,7 +623,7 @@ export const generateAlerts = (buildings: Building[]): Alert[] => {
           severity: "warning",
           type: "Low Level Warning",
           message: `${t.name} at ${t.currentLevel}% — below low threshold`,
-          timestamp: new Date(Date.now() - Math.random() * 1200000),
+          timestamp: new Date(),
           acknowledged: false,
         })
       }
@@ -590,7 +637,7 @@ export const generateAlerts = (buildings: Building[]): Alert[] => {
           severity: "critical",
           type: "Pump Failure",
           message: `${p.name} has faulted — immediate inspection required`,
-          timestamp: new Date(Date.now() - Math.random() * 300000),
+          timestamp: new Date(),
           acknowledged: false,
         })
       }
@@ -604,13 +651,17 @@ export const generateAlerts = (buildings: Building[]): Alert[] => {
           severity: "warning",
           type: "Valve Stuck",
           message: `${v.name} is stuck — manual intervention needed`,
-          timestamp: new Date(Date.now() - Math.random() * 900000),
+          timestamp: new Date(),
           acknowledged: false,
         })
       }
     })
   })
-  return alerts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+  const capped = alerts.slice(0, MAX_ALERTS)
+  capped.forEach((a, i) => {
+    a.timestamp = dummyTimestamp(a.id, i)
+  })
+  return capped.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 }
 
 export const generateLogs = (buildings: Building[]): LogEntry[] => {

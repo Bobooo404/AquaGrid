@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Search, Bell, Wifi, WifiOff, ChevronDown, Sun, Moon, Menu } from "lucide-react";
+import { Bell, Wifi, WifiOff, ChevronDown, Sun, Moon, Menu, X } from "lucide-react";
 import type { Alert } from "../data/mockData";
-import aquagridLogo from "../assets/aquagrid-logo.png";
+import { SITES } from "../data/sites";
 import type { AuthUser } from "../auth/auth";
 
 interface NavbarProps {
@@ -11,11 +11,12 @@ interface NavbarProps {
   onSelectSite: (site: string) => void;
   darkMode: boolean;
   onToggleDark: () => void;
+  sidebarOpen: boolean;
   onToggleSidebar: () => void;
   user: AuthUser;
 }
 
-const sites = ["Majestique Towers, Kharadi", "Option 2", "Option 3", "Option 4"];
+const sites = SITES;
 
 export default function Navbar({
   alerts,
@@ -24,6 +25,7 @@ export default function Navbar({
   onSelectSite,
   darkMode,
   onToggleDark,
+  sidebarOpen,
   onToggleSidebar,
   user,
 }: NavbarProps) {
@@ -37,10 +39,16 @@ export default function Navbar({
   return (
     <header
       className="flex items-center gap-4 px-4 h-14 flex-shrink-0 relative z-50"
-      style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)", boxShadow: "0 1px 6px rgba(14,165,233,0.07)" }}
+      style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)", boxShadow: "0 1px 6px var(--surface-shadow-soft)" }}
     >
-      <button onClick={onToggleSidebar} className="md:hidden p-1" style={{ color: "var(--text-secondary)" }}>
-        <Menu size={20} />
+      <button
+        onClick={onToggleSidebar}
+        className="md:hidden p-1"
+        style={{ color: "var(--text-secondary)" }}
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+        aria-expanded={sidebarOpen}
+      >
+        {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       {/* Building selector */}
@@ -52,7 +60,6 @@ export default function Navbar({
             background: "var(--bg-subtle)",
             border: "1px solid var(--border-strong)",
             color: "var(--text-primary)",
-            minWidth: 160,
           }}
         >
           <span className="truncate">{selectedSite ?? "Select Site"}</span>
@@ -65,7 +72,7 @@ export default function Navbar({
               background: "var(--bg-card)",
               border: "1px solid var(--border)",
               minWidth: 220,
-              boxShadow: "0 8px 32px rgba(14,165,233,0.12)",
+              boxShadow: "0 8px 32px var(--surface-shadow)",
             }}
           >
             <div className="p-2">
@@ -95,18 +102,6 @@ export default function Navbar({
             </div>
           </div>
         )}
-      </div>
-
-      {/* Global search */}
-      <div className="hidden sm:flex flex-1 max-w-xs items-center gap-2 px-3 py-1.5 rounded-xl"
-        style={{ background: "var(--bg-primary)", border: "1px solid var(--border)" }}
-      >
-        <Search size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-        <input
-          className="bg-transparent text-sm outline-none w-full"
-          style={{ color: "var(--text-primary)" }}
-          placeholder="Search..."
-        />
       </div>
 
       <div className="ml-auto flex items-center gap-3">
@@ -154,14 +149,14 @@ export default function Navbar({
                 background: "var(--bg-card)",
                 border: "1px solid var(--border)",
                 width: 320,
-                boxShadow: "0 8px 32px rgba(14,165,233,0.12)",
+                boxShadow: "0 8px 32px var(--surface-shadow)",
               }}
             >
               <div className="px-4 py-3 text-sm font-semibold" style={{ color: "var(--text-primary)", borderBottom: "1px solid var(--border)" }}>
                 Active Alerts ({unread} unread)
               </div>
               <div className="max-h-80 overflow-y-auto">
-                {alerts.slice(0, 8).map((alert) => (
+                {alerts.slice(0, 6).map((alert) => (
                   <div
                     key={alert.id}
                     className="px-4 py-3 hover:bg-blue-50 transition-colors"
@@ -192,7 +187,7 @@ export default function Navbar({
           )}
         </div>
 
-        {/* Role + Avatar */}
+        {/* Role badge */}
         <span
           className="hidden sm:inline text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-lg"
           title={`${user.name} · ${user.email}`}
@@ -204,23 +199,12 @@ export default function Navbar({
         >
           {user.role}
         </span>
-        <div
-          className="flex items-center justify-center rounded-full overflow-hidden cursor-pointer flex-shrink-0"
-          style={{
-            width: 32,
-            height: 32,
-            background: "var(--bg-subtle)",
-            border: `1px solid ${user.role === "admin" ? "var(--warning-border)" : "var(--border-strong)"}`,
-            padding: 3,
-          }}
+        <img
+          src="/manu2logobgr.png"
+          alt={user.name}
+          className="w-[120px] h-auto flex-shrink-0 cursor-pointer"
           title={`${user.name} (${user.role})`}
-        >
-          <img
-            src={aquagridLogo}
-            alt={user.name}
-            className="w-full h-full rounded-full object-contain"
-          />
-        </div>
+        />
       </div>
     </header>
   );

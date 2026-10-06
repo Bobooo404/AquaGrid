@@ -7,17 +7,18 @@ interface TankVisualProps {
   name: string;
   type: "overhead" | "ground";
   size?: "sm" | "md" | "lg";
+  showVolume?: boolean;
 }
 
-export default function TankVisual({ level, capacity, name, size = "md" }: TankVisualProps) {
+export default function TankVisual({ level, capacity, name, size = "md", showVolume = true }: TankVisualProps) {
   const fillRef = useRef<SVGRectElement>(null);
   const tankId = useId().replace(/:/g, "");
   const clipId = `tank-clip-${tankId}`;
 
   const sizeMap = {
-    sm: { w: 60, h: 90, rx: 5 },
-    md: { w: 72, h: 106, rx: 6 },
-    lg: { w: 120, h: 180, rx: 8 },
+    sm: { w: 69.34, h: 90, rx: 5 },
+    md: { w: 84.05, h: 106, rx: 6 },
+    lg: { w: 138.68, h: 180, rx: 8 },
   };
   const { w, h, rx } = sizeMap[size];
 
@@ -87,9 +88,11 @@ export default function TankVisual({ level, capacity, name, size = "md" }: TankV
           </text>
         </svg>
       </div>
-      <span className="text-xs font-mono font-semibold" style={{ color: fillColor }}>
-        {litersStr}
-      </span>
+      {showVolume && (
+        <span className="text-xs font-mono font-semibold" style={{ color: fillColor }}>
+          {litersStr}
+        </span>
+      )}
     </div>
   );
 }

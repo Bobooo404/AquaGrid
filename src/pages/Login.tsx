@@ -57,11 +57,11 @@ export default function Login({ darkMode, onToggleDark, onLogin }: LoginProps) {
       {/* Ambient blobs */}
       <div
         className="absolute -top-32 -left-32 w-96 h-96 rounded-full blur-3xl"
-        style={{ background: "rgba(14,165,233,0.18)" }}
+        style={{ background: "var(--ambient-glow)" }}
       />
       <div
         className="absolute -bottom-40 -right-24 w-[26rem] h-[26rem] rounded-full blur-3xl"
-        style={{ background: "rgba(37,99,235,0.14)" }}
+        style={{ background: "var(--ambient-glow-secondary)" }}
       />
 
       <button
@@ -79,23 +79,12 @@ export default function Login({ darkMode, onToggleDark, onLogin }: LoginProps) {
         style={{
           background: "var(--bg-card)",
           border: "1px solid var(--border-strong)",
-          boxShadow: "0 24px 64px rgba(14,165,233,0.14)",
+          boxShadow: "0 24px 64px var(--surface-shadow-strong)",
         }}
       >
         {/* Brand */}
         <div className="flex flex-col items-center mb-7">
-          <div
-            className="flex items-center justify-center rounded-2xl mb-3"
-            style={{
-              width: 58,
-              height: 58,
-              background: "var(--bg-subtle)",
-              border: "1px solid var(--border-strong)",
-              padding: 8,
-            }}
-          >
-            <img src={aquagridLogo} alt="AquaGrid" className="w-full h-full object-contain" />
-          </div>
+          <img src={aquagridLogo} alt="AquaGrid" className="h-[58px] w-auto mb-3" />
           <h1
             className="text-xl font-bold tracking-tight"
             style={{ color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}

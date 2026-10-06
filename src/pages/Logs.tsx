@@ -89,7 +89,7 @@ export default function LogsPage({ logs }: LogsPageProps) {
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 1px 8px rgba(14,165,233,0.05)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 1px 8px var(--surface-shadow-soft)" }}>
         <div
           className="grid text-xs font-mono uppercase tracking-wider px-5 py-3"
           style={{ gridTemplateColumns: "140px 1fr 80px 1fr", borderBottom: "1px solid var(--border)", background: "var(--bg-primary)", color: "var(--text-muted)" }}

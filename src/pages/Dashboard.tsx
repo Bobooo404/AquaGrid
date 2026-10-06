@@ -5,9 +5,9 @@ import {
   AlertTriangle,
   Droplet,
   ArrowRight,
-  ChevronDown,
   RotateCw,
   Circle,
+  Search,
 } from "lucide-react";
 import type { Building, Alert } from "../data/mockData";
 import TankVisual from "../components/TankVisual";
@@ -16,15 +16,12 @@ interface DashboardProps {
   buildings: Building[];
   alerts: Alert[];
   selectedSite: string | null;
-  onSelectBuilding: (id: string) => void;
+  onSelectBuilding: (id: string, name: string) => void;
 }
 
 type DisplayBuilding = Building & { sourceBuildingId: string };
 
-const majesticBuildingNames = Array.from(
-  { length: 10 },
-  (_, index) => `Building ${String.fromCharCode(65 + index)}`,
-);
+const displayBuildingNames = ["Building D1", "Building D2", "Building F1", "Building F2"];
 
 function StatCard({
   label,
@@ -68,7 +65,7 @@ function StatCard({
     <div
       ref={ref}
       className="rounded-2xl p-5 flex items-center gap-4"
-      style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 2px 10px rgba(14,165,233,0.07)", opacity: 0 }}
+      style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 2px 10px var(--surface-shadow-soft)", opacity: 0 }}
     >
       <div
         className="flex items-center justify-center rounded-xl flex-shrink-0"
@@ -91,7 +88,7 @@ function PipelineIndicator({ type, active }: { type: "clean" | "recycled" | "sew
   const colors = {
     clean:    { stroke: "var(--accent-cyan)", label: "CW" },
     recycled: { stroke: "#10b981", label: "RW" },
-    sewage:   { stroke: "#8b5cf6", label: "SW" },
+    sewage:   { stroke: "#8b5cf6", label: "FW" },
   };
   const c = colors[type];
   return (
@@ -109,12 +106,8 @@ function PipelineIndicator({ type, active }: { type: "clean" | "recycled" | "sew
     </div>
   );
 }
-
 function BuildingCard({ building, onSelect }: { building: Building; onSelect: () => void }) {
   const statusTanks = building.tanks.slice(0, 3);
-  const hasFault  = building.pumps.some((p) => p.status === "fault") || building.valves.some((v) => v.status === "stuck");
-  const isCritical = building.tanks.some((t) => t.currentLevel <= t.criticalThreshold);
-  const isWarning  = building.tanks.some((t) => t.currentLevel <= t.lowThreshold);
 
   return (
     <div
@@ -122,14 +115,8 @@ function BuildingCard({ building, onSelect }: { building: Building; onSelect: ()
       className="rounded-2xl p-5 cursor-pointer group transition-all duration-200 hover:shadow-lg"
       style={{
         background: "var(--bg-card)",
-        border: hasFault || isCritical
-          ? "1px solid var(--danger-border)"
-          : isWarning
-          ? "1px solid var(--warning-border)"
-          : "1px solid var(--border-strong)",
-        boxShadow: hasFault || isCritical
-          ? "0 2px 12px rgba(239,68,68,0.08)"
-          : "0 2px 10px rgba(14,165,233,0.06)",
+        border: "1px solid var(--border-strong)",
+        boxShadow: "0 2px 10px var(--surface-shadow-soft)",
       }}
     >
       {/* Header */}
@@ -137,14 +124,8 @@ function BuildingCard({ building, onSelect }: { building: Building; onSelect: ()
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{building.name}</h3>
-            {(hasFault || isCritical) && (
-              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-xs font-mono" style={{ background: "var(--danger-surface)", color: "var(--danger-text)", border: "1px solid var(--danger-border)" }}>
-                <AlertTriangle size={10} /> ALERT
-              </span>
-            )}
           </div>
-          <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{building.location} · {building.floors}F</div>
-        </div>
+      </div>
         <button className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-medium" style={{ color: "var(--accent-cyan)" }}>
           Detail <ArrowRight size={12} />
         </button>
@@ -165,46 +146,22 @@ function BuildingCard({ building, onSelect }: { building: Building; onSelect: ()
       </div>
 
       {/* Status row */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            {building.pumps.map((pump) => (
-              <div key={pump.id} className="flex items-center gap-1">
-                <RotateCw
-                  size={12}
-                  className={pump.status === "running" ? "pump-running" : ""}
-                  style={{ color: pump.status === "fault" ? "#ef4444" : pump.status === "running" ? "var(--accent-cyan)" : "var(--border-strong)" }}
-                />
-                <span
-                  className="text-xs font-mono px-1.5 py-0.5 rounded-lg"
-                  style={{
-                    background: pump.status === "running" ? "var(--bg-subtle)" : pump.status === "fault" ? "var(--danger-surface)" : "var(--bg-neutral)",
-                    color:      pump.status === "running" ? "var(--accent-cyan)" : pump.status === "fault" ? "#ef4444" : "#94a3b8",
-                    border:     `1px solid ${pump.status === "running" ? "var(--border-strong)" : pump.status === "fault" ? "var(--danger-border)" : "var(--border-neutral)"}`,
-                    fontSize: 10,
-                  }}
-                >
-                  {pump.status.toUpperCase()}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {building.valves.slice(0, 3).map((valve) => (
-              <div key={valve.id} className="flex items-center gap-1">
-                <Circle
-                  size={8}
-                  style={{
-                    color: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--border-strong)",
-                    fill:  valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--border-strong)",
-                  }}
-                />
-                <span className="text-xs font-mono" style={{ color: "var(--text-muted)", fontSize: 10 }}>
-                  {valve.status === "stuck" ? "STUCK" : valve.status.toUpperCase()}
-                </span>
-              </div>
-            ))}
-          </div>
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-1 items-start">
+          {building.valves.map((valve) => (
+            <div key={valve.id} className="flex items-center gap-1">
+              <Circle
+                size={8}
+                style={{
+                  color: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--border-strong)",
+                  fill:  valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--border-strong)",
+                }}
+              />
+              <span className="text-xs font-mono" style={{ color: "var(--text-muted)", fontSize: 10 }}>
+                {valve.name} · {valve.status === "stuck" ? "STUCK" : valve.status.toUpperCase()}
+              </span>
+            </div>
+          ))}
         </div>
         <div className="flex flex-col gap-1 items-end">
           {building.pipelines.map((pl) => (
@@ -218,55 +175,36 @@ function BuildingCard({ building, onSelect }: { building: Building; onSelect: ()
 
 export default function Dashboard({ buildings, alerts, selectedSite, onSelectBuilding }: DashboardProps) {
   const gridRef = useRef<HTMLDivElement>(null);
-  const [buildingFilter, setBuildingFilter] = useState("all");
-  const [buildingFilterOpen, setBuildingFilterOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const majesticBuildings = useMemo<DisplayBuilding[]>(
+  const availableBuildings = useMemo<DisplayBuilding[]>(
     () =>
-      majesticBuildingNames.map((name, index) => {
-        const source = buildings[index % buildings.length];
-        return {
-          ...source,
-          id: `maj-${name.slice(-1).toLowerCase()}`,
-          name,
-          location: "Majestique Towers",
-          sourceBuildingId: source.id,
-        };
-      }),
-    [buildings],
+      selectedSite
+        ? displayBuildingNames.map((name, index) => {
+            const source = buildings[index % buildings.length];
+            return {
+              ...source,
+              id: `disp-${name.toLowerCase()}`,
+              name,
+              sourceBuildingId: source.id,
+            };
+          })
+        : [],
+    [buildings, selectedSite],
   );
 
-  const availableBuildings = useMemo<DisplayBuilding[]>(() => {
-    if (!selectedSite) return [];
-    return selectedSite === "Majestique Towers, Kharadi"
-      ? majesticBuildings
-      : buildings.map((building) => ({ ...building, sourceBuildingId: building.id }));
-  }, [buildings, majesticBuildings, selectedSite]);
-
   const visibleBuildings = useMemo(() => {
-    if (buildingFilter === "all") return availableBuildings;
-
-    const selected = availableBuildings.find((building) => building.id === buildingFilter);
-    if (!selected) return availableBuildings;
-
-    if (selectedSite === "Majestique Towers, Kharadi" && selected.name === "Building D") {
-      return ["D1", "D2"].map((suffix) => ({
-        ...selected,
-        id: `maj-${suffix.toLowerCase()}`,
-        name: `${suffix} Status`,
-      }));
-    }
-
-    return [selected];
-  }, [availableBuildings, buildingFilter, selectedSite]);
+    const query = search.trim().toLowerCase();
+    if (!query) return availableBuildings;
+    return availableBuildings.filter((b) => b.name.toLowerCase().includes(query));
+  }, [availableBuildings, search]);
 
   const activePumps = visibleBuildings.reduce((acc, b) => acc + b.pumps.filter((p) => p.status === "running").length, 0);
   const tanksBelowThreshold = visibleBuildings.reduce((acc, b) => acc + b.tanks.filter((t) => t.currentLevel <= t.lowThreshold).length, 0);
   const unreadAlerts = alerts.filter((a) => !a.acknowledged).length;
 
   useEffect(() => {
-    setBuildingFilter("all");
-    setBuildingFilterOpen(false);
+    setSearch("");
   }, [selectedSite]);
 
   useEffect(() => {
@@ -279,7 +217,7 @@ export default function Dashboard({ buildings, alerts, selectedSite, onSelectBui
         ease: "outQuart",
       });
     }
-  }, [buildingFilter, selectedSite]);
+  }, [selectedSite, search]);
 
   return (
     <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto" style={{ background: "var(--bg-primary)" }}>
@@ -314,70 +252,39 @@ export default function Dashboard({ buildings, alerts, selectedSite, onSelectBui
       <div>
         <div className="flex items-center justify-between gap-3 mb-4">
           <h2 className="text-xs font-semibold uppercase tracking-widest font-mono" style={{ color: "var(--text-muted)" }}>Building Status</h2>
-          <div className="relative">
-            <button
-              onClick={() => setBuildingFilterOpen((open) => !open)}
-              className="flex items-center justify-between gap-3 px-3 py-1.5 rounded-xl text-sm transition-colors hover:bg-blue-50"
-              style={{
-                minWidth: 150,
-                background: "var(--bg-card)",
-                border: "1px solid var(--border-strong)",
-                color: "var(--text-primary)",
-              }}
-            >
-              <span>{buildingFilter === "all"
-                ? "All Buildings"
-                : availableBuildings.find((building) => building.id === buildingFilter)?.name}
-              </span>
-              <ChevronDown size={14} style={{ color: "var(--text-muted)" }} />
-            </button>
-            {buildingFilterOpen && (
-              <div
-                className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-40 max-h-64 overflow-y-auto"
-                style={{
-                  minWidth: 170,
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  boxShadow: "0 8px 24px rgba(14,165,233,0.12)",
-                }}
-              >
-                <button
-                  onClick={() => { setBuildingFilter("all"); setBuildingFilterOpen(false); }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors"
-                  style={{ color: buildingFilter === "all" ? "var(--accent-blue)" : "var(--text-primary)" }}
-                >
-                  All Buildings
-                </button>
-                {availableBuildings.map((building) => (
-                  <button
-                    key={building.id}
-                    onClick={() => { setBuildingFilter(building.id); setBuildingFilterOpen(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors"
-                    style={{ color: buildingFilter === building.id ? "var(--accent-blue)" : "var(--text-primary)" }}
-                  >
-                    {building.name}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border)", width: 200 }}
+          >
+            <Search size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search buildings..."
+              className="bg-transparent text-sm outline-none w-full"
+              style={{ color: "var(--text-primary)" }}
+            />
           </div>
         </div>
+        {visibleBuildings.length === 0 ? (
+          <div
+            className="rounded-2xl p-10 text-center text-sm"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-muted)" }}
+          >
+            No buildings match "{search}"
+          </div>
+        ) : (
         <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {visibleBuildings.map((b) => (
             <div key={b.id} className="building-card-anim" style={{ opacity: 0 }}>
               <BuildingCard
                 building={b}
-                onSelect={() => {
-                  if (selectedSite === "Majestique Towers, Kharadi" && b.name === "Building D") {
-                    setBuildingFilter(b.id);
-                    return;
-                  }
-                  onSelectBuilding(b.sourceBuildingId);
-                }}
+                onSelect={() => onSelectBuilding(b.sourceBuildingId, b.name)}
               />
             </div>
           ))}
         </div>
+        )}
       </div>
       )}
     </div>
