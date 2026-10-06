@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import aquagridLogo from "../assets/aquagrid-logo.png";
+import type { AuthUser } from "../auth/auth";
 
 type Page = "dashboard" | "buildings" | "alerts" | "logs" | "management";
 
@@ -20,6 +21,8 @@ interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
   alertCount: number;
+  user: AuthUser;
+  onLogout: () => void;
 }
 
 const navItems: { id: Page; label: string; icon: typeof LayoutDashboard }[] = [
@@ -30,7 +33,7 @@ const navItems: { id: Page; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "management", label: "Management", icon: Settings },
 ];
 
-export default function Sidebar({ currentPage, onNavigate, collapsed, onToggle, alertCount }: SidebarProps) {
+export default function Sidebar({ currentPage, onNavigate, collapsed, onToggle, alertCount, user, onLogout }: SidebarProps) {
   const logoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -130,28 +133,58 @@ export default function Sidebar({ currentPage, onNavigate, collapsed, onToggle, 
 
       {/* User / bottom */}
       <div style={{ borderTop: "1px solid var(--border)" }} className="p-3 flex flex-col gap-2">
-        <button className="flex items-center gap-2 px-2 py-2 rounded-xl hover:bg-blue-50 transition-colors">
+        <div
+          className="flex items-center gap-2 px-2 py-2 rounded-xl"
+          title={collapsed ? `${user.name} · ${user.email}` : undefined}
+        >
           <div
             className="flex-shrink-0 flex items-center justify-center rounded-full overflow-hidden"
             style={{ width: 28, height: 28, background: "var(--bg-subtle)", border: "1px solid var(--border-strong)", padding: 2 }}
           >
             <img
               src={aquagridLogo}
-              alt="Admin User"
+              alt={user.name}
               className="w-full h-full rounded-full object-contain"
             />
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold truncate" style={{ color: "var(--text-primary)" }}>Admin User</div>
-              <div className="text-xs truncate" style={{ color: "var(--text-muted)" }}>admin@aquaflow.io</div>
+              <div className="text-xs font-semibold truncate" style={{ color: "var(--text-primary)" }}>{user.name}</div>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span
+                  className="text-[9px] font-mono font-bold uppercase px-1.5 py-px rounded"
+                  style={
+                    user.role === "admin"
+                      ? { background: "var(--warning-surface)", color: "var(--warning-text)", border: "1px solid var(--warning-border)" }
+                      : { background: "var(--info-surface)", color: "var(--accent-blue)", border: "1px solid var(--border-strong)" }
+                  }
+                >
+                  {user.role}
+                </span>
+                <span className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{user.email}</span>
+              </div>
             </div>
           )}
-        </button>
+        </div>
         {!collapsed && (
-          <button className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm hover:bg-red-50 hover:text-red-500 transition-colors" style={{ color: "var(--text-muted)" }}>
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm hover:bg-red-50 hover:text-red-500 transition-colors"
+            style={{ color: "var(--text-muted)" }}
+          >
             <LogOut size={14} />
             <span className="text-xs">Logout</span>
+          </button>
+        )}
+        {collapsed && (
+          <button
+            onClick={onLogout}
+            title="Logout"
+            aria-label="Logout"
+            className="flex items-center justify-center px-2 py-2 rounded-xl hover:bg-red-50 transition-colors"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <LogOut size={16} />
           </button>
         )}
       </div>

@@ -4,10 +4,12 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import type { Building, Tank } from "../data/mockData";
+import type { Role } from "../auth/auth";
 import TankVisual from "../components/TankVisual";
 
 interface BuildingDetailProps {
   building: Building;
+  role: Role;
   onBack: () => void;
   onTogglePump: (buildingId: string, pumpId: string) => void;
   onToggleValve: (buildingId: string, valveId: string) => void;
@@ -39,7 +41,8 @@ const pipelineColors: Record<string, string> = {
   sewage: "#8b5cf6",
 };
 
-export default function BuildingDetail({ building, onBack, onTogglePump, onToggleValve }: BuildingDetailProps) {
+export default function BuildingDetail({ building, role, onBack, onTogglePump, onToggleValve }: BuildingDetailProps) {
+  const isAdmin = role === "admin";
   const [confirmPump, setConfirmPump] = useState<string | null>(null);
   const [confirmValve, setConfirmValve] = useState<string | null>(null);
   const [thresholds, setThresholds] = useState<Record<string, number>>(() =>
@@ -72,39 +75,85 @@ export default function BuildingDetail({ building, onBack, onTogglePump, onToggl
         </div>
       </div>
 
+      {!isAdmin && (
+        <div
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-mono"
+          style={{ background: "var(--info-surface)", border: "1px solid var(--border-strong)", color: "var(--accent-blue)" }}
+        >
+          Read-only view · showing tank levels and pipeline status
+        </div>
+      )}
+
+      {/* Tanks */}
+      <div className="rounded-2xl p-6" style={cardStyle}>
+        <h2 className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>Tank Levels</h2>
+        <div className="grid grid-cols-3 items-end gap-2">
+          {building.tanks.map((t) => (
+            <TankVisual key={t.id} level={t.currentLevel} capacity={t.capacity} name={t.name} type={t.type} size="md" />
+          ))}
+        </div>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {building.tanks.map((t) => (
+            <div key={t.id} className="rounded-xl p-3" style={rowStyle}>
+              <div className="text-xs font-mono mb-1" style={{ color: "var(--text-muted)" }}>{t.name}</div>
+              <div className="text-lg font-bold font-mono" style={{ color: "var(--text-primary)" }}>{Math.round(t.currentLevel)}%</div>
+              <div className="text-xs" style={{ color: "var(--text-muted)" }}>
+                {Math.round((t.currentLevel / 100) * t.capacity).toLocaleString()}L / {t.capacity.toLocaleString()}L
+              </div>
+              <div className="mt-2 flex gap-1 flex-wrap">
+                <span className="text-xs font-mono px-1 py-0.5 rounded-lg" style={{ background: "var(--warning-surface)", color: "var(--warning-text)", border: "1px solid var(--warning-border)" }}>
+                  Low: {t.lowThreshold}%
+                </span>
+                <span className="text-xs font-mono px-1 py-0.5 rounded-lg" style={{ background: "var(--danger-surface)", color: "var(--danger-text)", border: "1px solid var(--danger-border)" }}>
+                  Crit: {t.criticalThreshold}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Pipelines */}
+      <div className="rounded-2xl p-5" style={cardStyle}>
+        <h2 className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>Pipeline Status</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {building.pipelines.map((pl) => (
+            <div key={pl.id} className="rounded-xl p-4 flex flex-col gap-3"
+              style={{
+                background: pl.isActive ? `${pipelineColors[pl.type]}0d` : "var(--bg-neutral)",
+                border: `1px solid ${pl.isActive ? pipelineColors[pl.type] + "40" : "var(--border-neutral)"}`,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ background: pipelineColors[pl.type], opacity: pl.isActive ? 1 : 0.3 }} />
+                <span className="text-xs font-mono font-bold" style={{ color: pipelineColors[pl.type] }}>
+                  {pl.type.toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <div className="text-xs" style={{ color: "var(--text-muted)" }}>{pl.name}</div>
+                <div className="text-sm font-mono font-bold mt-1" style={{ color: "var(--text-primary)" }}>
+                  {pl.isActive ? `${pl.flowRate} L/min` : "INACTIVE"}
+                </div>
+              </div>
+              <svg width="100%" height="12">
+                <line x1="0" y1="6" x2="100%" y2="6"
+                  stroke={pl.isActive ? pipelineColors[pl.type] : "var(--border)"}
+                  strokeWidth="2.5"
+                  strokeDasharray={pl.isActive ? "6 4" : "none"}
+                  className={pl.isActive ? (pl.type === "sewage" ? "flow-sewage" : pl.type === "recycled" ? "flow-recycled" : "flow-active") : ""}
+                />
+              </svg>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column */}
         <div className="flex flex-col gap-4 lg:col-span-1">
-          {/* Tanks */}
-          <div className="rounded-2xl p-6" style={cardStyle}>
-            <h2 className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>Tank Levels</h2>
-            <div className="flex items-end justify-center gap-6 flex-wrap">
-              {building.tanks.map((t) => (
-                <TankVisual key={t.id} level={t.currentLevel} capacity={t.capacity} name={t.name} type={t.type} size="lg" />
-              ))}
-            </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {building.tanks.map((t) => (
-                <div key={t.id} className="rounded-xl p-3" style={rowStyle}>
-                  <div className="text-xs font-mono mb-1" style={{ color: "var(--text-muted)" }}>{t.name}</div>
-                  <div className="text-lg font-bold font-mono" style={{ color: "var(--text-primary)" }}>{Math.round(t.currentLevel)}%</div>
-                  <div className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {Math.round((t.currentLevel / 100) * t.capacity).toLocaleString()}L / {t.capacity.toLocaleString()}L
-                  </div>
-                  <div className="mt-2 flex gap-1 flex-wrap">
-                    <span className="text-xs font-mono px-1 py-0.5 rounded-lg" style={{ background: "var(--warning-surface)", color: "var(--warning-text)", border: "1px solid var(--warning-border)" }}>
-                      Low: {t.lowThreshold}%
-                    </span>
-                    <span className="text-xs font-mono px-1 py-0.5 rounded-lg" style={{ background: "var(--danger-surface)", color: "var(--danger-text)", border: "1px solid var(--danger-border)" }}>
-                      Crit: {t.criticalThreshold}%
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Pumps */}
+          {isAdmin && (
           <div className="rounded-2xl p-5" style={cardStyle}>
             <h2 className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>Pump Controls</h2>
             <div className="flex flex-col gap-2">
@@ -140,8 +189,10 @@ export default function BuildingDetail({ building, onBack, onTogglePump, onToggl
               ))}
             </div>
           </div>
+          )}
 
           {/* Valves */}
+          {isAdmin && (
           <div className="rounded-2xl p-5" style={cardStyle}>
             <h2 className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>Valve Controls</h2>
             <div className="flex flex-col gap-2">
@@ -176,11 +227,13 @@ export default function BuildingDetail({ building, onBack, onTogglePump, onToggl
               ))}
             </div>
           </div>
+          )}
         </div>
 
         {/* Right column */}
         <div className="flex flex-col gap-4 lg:col-span-2">
           {/* Chart */}
+          {isAdmin && (
           <div className="rounded-2xl p-5" style={cardStyle}>
             <h2 className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>Tank Level History (Last 30 min)</h2>
             <ResponsiveContainer width="100%" height={220}>
@@ -204,44 +257,10 @@ export default function BuildingDetail({ building, onBack, onTogglePump, onToggl
               </LineChart>
             </ResponsiveContainer>
           </div>
-
-          {/* Pipelines */}
-          <div className="rounded-2xl p-5" style={cardStyle}>
-            <h2 className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: "var(--text-muted)" }}>Pipeline Status</h2>
-            <div className="grid grid-cols-3 gap-3">
-              {building.pipelines.map((pl) => (
-                <div key={pl.id} className="rounded-xl p-4 flex flex-col gap-3"
-                  style={{
-                    background: pl.isActive ? `${pipelineColors[pl.type]}0d` : "var(--bg-neutral)",
-                    border: `1px solid ${pl.isActive ? pipelineColors[pl.type] + "40" : "var(--border-neutral)"}`,
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: pipelineColors[pl.type], opacity: pl.isActive ? 1 : 0.3 }} />
-                    <span className="text-xs font-mono font-bold" style={{ color: pipelineColors[pl.type] }}>
-                      {pl.type.toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="text-xs" style={{ color: "var(--text-muted)" }}>{pl.name}</div>
-                    <div className="text-sm font-mono font-bold mt-1" style={{ color: "var(--text-primary)" }}>
-                      {pl.isActive ? `${pl.flowRate} L/min` : "INACTIVE"}
-                    </div>
-                  </div>
-                  <svg width="100%" height="12">
-                    <line x1="0" y1="6" x2="100%" y2="6"
-                      stroke={pl.isActive ? pipelineColors[pl.type] : "var(--border)"}
-                      strokeWidth="2.5"
-                      strokeDasharray={pl.isActive ? "6 4" : "none"}
-                      className={pl.isActive ? (pl.type === "sewage" ? "flow-sewage" : pl.type === "recycled" ? "flow-recycled" : "flow-active") : ""}
-                    />
-                  </svg>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
 
           {/* Thresholds */}
+          {isAdmin && (
           <div className="rounded-2xl p-5" style={cardStyle}>
             <h2 className="text-xs font-mono uppercase tracking-widest mb-4 flex items-center gap-2" style={{ color: "var(--text-muted)" }}>
               <Sliders size={14} /> Threshold Settings
@@ -271,11 +290,12 @@ export default function BuildingDetail({ building, onBack, onTogglePump, onToggl
               Save Thresholds
             </button>
           </div>
+          )}
         </div>
       </div>
 
       {/* Confirm Modal */}
-      {(confirmPump || confirmValve) && (
+      {isAdmin && (confirmPump || confirmValve) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(30,58,138,0.15)", backdropFilter: "blur(4px)" }}>
           <div className="rounded-2xl p-6 max-w-sm w-full mx-4 alert-enter" style={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)", boxShadow: "0 16px 48px rgba(14,165,233,0.15)" }}>
             <div className="flex items-center gap-3 mb-4">

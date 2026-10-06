@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Search, Bell, Wifi, WifiOff, ChevronDown, Sun, Moon, Menu } from "lucide-react";
 import type { Alert } from "../data/mockData";
 import aquagridLogo from "../assets/aquagrid-logo.png";
+import type { AuthUser } from "../auth/auth";
 
 interface NavbarProps {
   alerts: Alert[];
@@ -11,6 +12,7 @@ interface NavbarProps {
   darkMode: boolean;
   onToggleDark: () => void;
   onToggleSidebar: () => void;
+  user: AuthUser;
 }
 
 const sites = ["Majestique Towers, Kharadi", "Option 2", "Option 3", "Option 4"];
@@ -23,6 +25,7 @@ export default function Navbar({
   darkMode,
   onToggleDark,
   onToggleSidebar,
+  user,
 }: NavbarProps) {
   const [buildingOpen, setBuildingOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -189,15 +192,32 @@ export default function Navbar({
           )}
         </div>
 
-        {/* Avatar */}
+        {/* Role + Avatar */}
+        <span
+          className="hidden sm:inline text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-lg"
+          title={`${user.name} · ${user.email}`}
+          style={
+            user.role === "admin"
+              ? { background: "var(--warning-surface)", color: "var(--warning-text)", border: "1px solid var(--warning-border)" }
+              : { background: "var(--info-surface)", color: "var(--accent-blue)", border: "1px solid var(--border-strong)" }
+          }
+        >
+          {user.role}
+        </span>
         <div
           className="flex items-center justify-center rounded-full overflow-hidden cursor-pointer flex-shrink-0"
-          style={{ width: 32, height: 32, background: "var(--bg-subtle)", border: "1px solid var(--border-strong)", padding: 3 }}
-          title="Admin User"
+          style={{
+            width: 32,
+            height: 32,
+            background: "var(--bg-subtle)",
+            border: `1px solid ${user.role === "admin" ? "var(--warning-border)" : "var(--border-strong)"}`,
+            padding: 3,
+          }}
+          title={`${user.name} (${user.role})`}
         >
           <img
             src={aquagridLogo}
-            alt="Admin User"
+            alt={user.name}
             className="w-full h-full rounded-full object-contain"
           />
         </div>

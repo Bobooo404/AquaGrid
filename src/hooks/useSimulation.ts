@@ -87,17 +87,7 @@ export function useSimulation() {
         });
 
         const newAlerts = generateAlerts(updated);
-        setAlerts((prev) => {
-          const existingIds = new Set(prev.map((a) => a.id));
-          const brandNew = newAlerts.filter((a) => !existingIds.has(a.id));
-          if (brandNew.length > 0) {
-            const critical = brandNew.filter((a) => a.severity === "critical");
-            if (critical.length > 0) {
-              addToast(`CRITICAL: ${critical[0].message}`, "error");
-            }
-          }
-          return newAlerts;
-        });
+        setAlerts(newAlerts);
 
         return updated;
       });
@@ -118,7 +108,7 @@ export function useSimulation() {
 
   const acknowledgeAlert = useCallback((alertId: string) => {
     setAlerts((prev) => prev.map((a) => (a.id === alertId ? { ...a, acknowledged: true } : a)));
-    addToast("Alert acknowledged", "success");
+    // addToast("Alert acknowledged", "success");
   }, [addToast]);
 
   const togglePump = useCallback((buildingId: string, pumpId: string) => {
@@ -140,7 +130,7 @@ export function useSimulation() {
             }
       )
     );
-    addToast("Pump override applied", "success");
+    // addToast("Pump override applied", "success");
   }, [addToast]);
 
   const toggleValve = useCallback((buildingId: string, valveId: string) => {
@@ -162,7 +152,7 @@ export function useSimulation() {
             }
       )
     );
-    addToast("Valve override applied", "success");
+    // addToast("Valve override applied", "success");
   }, [addToast]);
 
   return {

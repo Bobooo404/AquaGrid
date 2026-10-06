@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
-import ToastContainer from "./components/ToastContainer";
 import Dashboard from "./pages/Dashboard";
 import BuildingDetail from "./pages/BuildingDetail";
 import AlertsPage from "./pages/Alerts";
 import LogsPage from "./pages/Logs";
 import Management from "./pages/Management";
 import { useSimulation } from "./hooks/useSimulation";
+import Login from "./pages/Login";
+import { loadSession, logout as clearSession, type AuthUser } from "./auth/auth";
 
 type Page = "dashboard" | "buildings" | "alerts" | "logs" | "management";
 
@@ -17,14 +18,21 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("aquaflow-theme") === "dark");
   const [detailBuildingId, setDetailBuildingId] = useState<string | null>(null);
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
+  const [showBrandFooter, setShowBrandFooter] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(() => loadSession());
+
+  useEffect(() => {
+    const onScroll = () => setShowBrandFooter(window.scrollY > 12);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const {
     buildings,
     alerts,
     logs,
-    toasts,
     wsConnected,
-    dismissToast,
     acknowledgeAlert,
     togglePump,
     toggleValve,
@@ -42,7 +50,30 @@ export default function App() {
     setCurrentPage("buildings");
   };
 
+  const handleLogout = () => {
+    clearSession();
+    setUser(null);
+    setDetailBuildingId(null);
+    setCurrentPage("dashboard");
+  };
+
   const detailBuilding = detailBuildingId ? buildings.find((b) => b.id === detailBuildingId) : null;
+
+  if (!user) {
+    return (
+      <div
+        data-theme={darkMode ? "dark" : "light"}
+        className="bg-app"
+        style={{ fontFamily: "'Inter', 'DM Sans', system-ui, sans-serif" }}
+      >
+        <Login
+          darkMode={darkMode}
+          onToggleDark={() => setDarkMode((d) => !d)}
+          onLogin={(u) => setUser(u)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -50,6 +81,36 @@ export default function App() {
       className="flex h-screen overflow-hidden bg-app text-primary"
       style={{ fontFamily: "'Inter', 'DM Sans', system-ui, sans-serif" }}
     >
+      {showBrandFooter && (
+        <div
+          className="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 text-xs font-medium tracking-[0.12em] transition-opacity duration-200"
+          style={{ color: "var(--text-muted)", opacity: showBrandFooter ? 1 : 0 }}
+        >
+          <span style={{ color: "var(--text-muted)" }}>Product by</span>
+          <span
+            style={{
+              background: "linear-gradient(90deg, #ff2227 0%, #9f0000 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            MANU
+          </span>
+          <span
+            style={{
+              background: "radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.49) 0%, rgba(60, 64, 65, 1) 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Robotics
+          </span>
+        </div>
+      )}
       {/* Sidebar */}
       <div className={`flex-shrink-0 h-full ${sidebarCollapsed ? "hidden md:flex" : "flex"}`}
         style={{ display: sidebarCollapsed ? undefined : "flex" }}
@@ -63,6 +124,8 @@ export default function App() {
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed((c) => !c)}
           alertCount={unreadAlerts}
+          user={user}
+          onLogout={handleLogout}
         />
       </div>
 
@@ -80,6 +143,7 @@ export default function App() {
           darkMode={darkMode}
           onToggleDark={() => setDarkMode((d) => !d)}
           onToggleSidebar={() => setSidebarCollapsed((c) => !c)}
+          user={user}
         />
 
         {/* Content */}
@@ -97,6 +161,7 @@ export default function App() {
             detailBuilding ? (
               <BuildingDetail
                 building={detailBuilding}
+                role={user.role}
                 onBack={() => setDetailBuildingId(null)}
                 onTogglePump={togglePump}
                 onToggleValve={toggleValve}
@@ -124,7 +189,7 @@ export default function App() {
       </div>
 
       {/* Toasts */}
-      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      {/* <ToastContainer toasts={toasts} onDismiss={dismissToast} /> */}
 
       {/* Connection badge */}
       {!wsConnected && (

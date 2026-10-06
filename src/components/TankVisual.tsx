@@ -53,8 +53,8 @@ export default function TankVisual({ level, capacity, name, size = "md" }: TankV
           {/* Tank outline */}
           <rect
             x="1" y="1" width={w - 2} height={h - 2} rx={rx}
-            fill="#f8fafc"
-            stroke="#94a3b8"
+            fill="var(--bg-neutral)"
+            stroke="var(--border-neutral)"
             strokeWidth="2"
           />
 
