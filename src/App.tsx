@@ -5,11 +5,13 @@ import Dashboard from "./pages/Dashboard";
 import BuildingDetail from "./pages/BuildingDetail";
 import AlertsPage from "./pages/Alerts";
 import LogsPage from "./pages/Logs";
+import FeedbackPage from "./pages/Feedback";
 import { useSimulation } from "./hooks/useSimulation";
 import Login from "./pages/Login";
 import { loadSession, logout as clearSession, type AuthUser } from "./auth/auth";
+import { applyDisplayStatus } from "./data/mockData";
 
-type Page = "dashboard" | "buildings" | "alerts" | "logs";
+type Page = "dashboard" | "buildings" | "alerts" | "logs" | "feedback";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>("dashboard");
@@ -27,7 +29,8 @@ export default function App() {
     wsConnected,
     acknowledgeAlert,
     toggleValve,
-  } = useSimulation();
+    updateThresholds,
+  } = useSimulation(selectedSite);
 
   const unreadAlerts = alerts.filter((a) => !a.acknowledged).length;
 
@@ -43,6 +46,7 @@ export default function App() {
 
   const handleLogin = (u: AuthUser) => {
     setUser(u);
+    setMobileSidebarOpen(false);
     setSelectedSite(null);
     localStorage.removeItem("aquaflow-site");
   };
@@ -51,13 +55,17 @@ export default function App() {
     clearSession();
     localStorage.removeItem("aquaflow-site");
     setUser(null);
+    setMobileSidebarOpen(false);
     setSelectedSite(null);
     setDetailBuildingId(null);
     setDetailBuildingName(null);
     setCurrentPage("dashboard");
   };
 
-  const detailBuilding = detailBuildingId ? buildings.find((b) => b.id === detailBuildingId) : null;
+  const sourceDetailBuilding = detailBuildingId ? buildings.find((b) => b.id === detailBuildingId) : null;
+  const detailBuilding = sourceDetailBuilding && detailBuildingName
+    ? applyDisplayStatus(sourceDetailBuilding, detailBuildingName)
+    : sourceDetailBuilding;
 
   if (!user) {
     return (
@@ -131,10 +139,12 @@ export default function App() {
           {currentPage === "buildings" && (
             detailBuilding ? (
               <BuildingDetail
-                building={detailBuildingName ? { ...detailBuilding, name: detailBuildingName } : detailBuilding}
+                key={detailBuilding.id}
+                building={detailBuilding}
                 role={user.role}
                 onBack={() => setDetailBuildingId(null)}
-                onToggleValve={toggleValve}
+                onToggleValve={(buildingId, valveId, status) => toggleValve(buildingId, valveId, status)}
+                onSaveThresholds={(buildingId, updates) => updateThresholds(buildingId, updates)}
               />
             ) : (
               <Dashboard
@@ -151,6 +161,8 @@ export default function App() {
           )}
 
           {currentPage === "logs" && <LogsPage logs={logs} />}
+
+          {currentPage === "feedback" && <FeedbackPage user={user} />}
         </main>
       </div>
 

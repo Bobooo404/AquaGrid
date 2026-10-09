@@ -2,6 +2,7 @@ export type PipelineType = "clean" | "recycled" | "sewage"
 export type AlertSeverity = "critical" | "warning" | "info"
 export type PumpStatus = "running" | "idle" | "fault"
 export type ValveStatus = "open" | "closed" | "stuck"
+export type InstallationStatus = "installed" | "under-installation" | "not-installed"
 
 export interface Tank {
   id: string
@@ -11,6 +12,13 @@ export interface Tank {
   currentLevel: number // 0-100 %
   lowThreshold: number
   criticalThreshold: number
+  installationStatus?: InstallationStatus
+}
+
+export interface TankThresholdUpdate {
+  tankId: string
+  low: number
+  critical: number
 }
 
 export interface Pump {
@@ -28,6 +36,9 @@ export interface Valve {
   pipelineType: PipelineType
   status: ValveStatus
   manualOverride: boolean
+  lastUpdated?: Date
+  lastOpenedAt?: Date
+  lastClosedAt?: Date
 }
 
 export interface Pipeline {
@@ -50,6 +61,9 @@ export interface Building {
   lastUpdated: Date
 }
 
+export type BuildingStatus = "critical" | "attention" | "normal"
+export type MonitoredBuilding = Building & { sourceBuildingId: string }
+
 export interface Alert {
   id: string
   buildingId: string
@@ -71,7 +85,122 @@ export interface LogEntry {
   timestamp: Date
 }
 
-export const initialBuildings: Building[] = [
+export const getPipelineInstallationStatus = (
+  building: Building,
+  pipelineType: PipelineType,
+): InstallationStatus => {
+  const tankNamesByPipeline: Record<PipelineType, string[]> = {
+    clean: ["domestic", "drinking"],
+    recycled: ["drinking"],
+    sewage: ["flushing"],
+  }
+  const relevantTanks = building.tanks.filter((tank) =>
+    tankNamesByPipeline[pipelineType].includes(tank.name.toLowerCase()),
+  )
+  if (relevantTanks.some((tank) => tank.installationStatus === "under-installation")) {
+    return "under-installation"
+  }
+  if (relevantTanks.some((tank) => tank.installationStatus === "not-installed")) {
+    return "not-installed"
+  }
+  return "installed"
+}
+
+export const applyDisplayStatus = (building: Building, name: string): Building => {
+  const tanks = building.tanks.map((tank) => {
+    if (tank.installationStatus) return tank
+    if (name === "Building D1" && ["domestic", "drinking"].includes(tank.name.toLowerCase())) {
+      return { ...tank, installationStatus: "under-installation" as const }
+    }
+    if (name === "Building D2") {
+      return { ...tank, installationStatus: "under-installation" as const }
+    }
+    if (name === "Building F1" || name === "Building F2") {
+      return { ...tank, installationStatus: "not-installed" as const }
+    }
+    return { ...tank, installationStatus: "installed" as const }
+  })
+
+  const valves = building.valves.map((valve) => {
+    if (valve.manualOverride || valve.status === "stuck") return valve
+    if (name === "Building D1") {
+      const label = valve.name.replace(/\s+valve$/i, "").toLowerCase()
+      if (label === "flushing") {
+        return {
+          ...valve,
+          pipelineType: "sewage" as const,
+          status: "open" as const,
+        }
+      }
+      return { ...valve, status: "closed" as const }
+    }
+    if (name === "Building D2" || name === "Building F1" || name === "Building F2") {
+      return { ...valve, status: "closed" as const }
+    }
+    return valve
+  })
+
+  return { ...building, name, tanks, valves }
+}
+
+const displayBuildingNames = ["Building D1", "Building D2", "Building F1", "Building F2"]
+
+export const getMonitoredBuildings = (buildings: Building[]): MonitoredBuilding[] =>
+  buildings.length === 0
+    ? []
+    : displayBuildingNames.map((name, index) => {
+        const source = buildings[index % buildings.length]
+        return {
+          ...applyDisplayStatus(source, name),
+          id: `disp-${name.toLowerCase()}`,
+          sourceBuildingId: source.id,
+        }
+      })
+
+export const getBuildingStatus = (building: Building): BuildingStatus => {
+  const installedTanks = building.tanks.filter(
+    (tank) => !tank.installationStatus || tank.installationStatus === "installed",
+  );
+  if (installedTanks.length === 0) return "normal";
+
+  if (
+    building.pumps.some((pump) => pump.status === "fault") ||
+    installedTanks.some((tank) => tank.currentLevel <= tank.criticalThreshold)
+  ) {
+    return "critical";
+  }
+  if (
+    building.valves.some((valve) =>
+      valve.status === "stuck" &&
+      getPipelineInstallationStatus(building, valve.pipelineType) === "installed",
+    ) ||
+    installedTanks.some((tank) => tank.currentLevel <= tank.lowThreshold)
+  ) {
+    return "attention"
+  }
+  return "normal"
+}
+
+const HOUR_MS = 3600000
+
+const seedValveTimestamps = (building: Building): Building => {
+  const base = building.lastUpdated.getTime()
+  return {
+    ...building,
+    valves: building.valves.map((valve, index) => {
+      const recent = (2 + index * 3) * HOUR_MS
+      const older = (7 + index * 4) * HOUR_MS
+      const [openedAgo, closedAgo] = valve.status === "closed" ? [older, recent] : [recent, older]
+      return {
+        ...valve,
+        lastOpenedAt: valve.lastOpenedAt ?? new Date(base - openedAgo),
+        lastClosedAt: valve.lastClosedAt ?? new Date(base - closedAgo),
+      }
+    }),
+  }
+}
+
+const rawBuildings: Building[] = [
   {
     id: "b1",
     name: "Building A",
@@ -127,21 +256,21 @@ export const initialBuildings: Building[] = [
     valves: [
       {
         id: "b1-v1",
-        name: "Inlet Valve",
+        name: "Domestic Valve",
         pipelineType: "clean",
         status: "open",
         manualOverride: false,
       },
       {
         id: "b1-v2",
-        name: "Outlet Valve",
+        name: "Drinking Valve",
         pipelineType: "clean",
         status: "open",
         manualOverride: false,
       },
       {
         id: "b1-v3",
-        name: "Recycle Inlet",
+        name: "Flushing Valve",
         pipelineType: "recycled",
         status: "closed",
         manualOverride: false,
@@ -227,21 +356,21 @@ export const initialBuildings: Building[] = [
     valves: [
       {
         id: "b2-v1",
-        name: "Main Inlet",
+        name: "Domestic Valve",
         pipelineType: "clean",
         status: "open",
         manualOverride: false,
       },
       {
         id: "b2-v2",
-        name: "Recycle Valve",
+        name: "Drinking Valve",
         pipelineType: "recycled",
         status: "open",
         manualOverride: false,
       },
       {
         id: "b2-v3",
-        name: "Outlet Valve",
+        name: "Flushing Valve",
         pipelineType: "clean",
         status: "open",
         manualOverride: false,
@@ -335,21 +464,21 @@ export const initialBuildings: Building[] = [
     valves: [
       {
         id: "b3-v1",
-        name: "Clean Inlet A",
+        name: "Domestic Valve",
         pipelineType: "clean",
         status: "open",
         manualOverride: false,
       },
       {
         id: "b3-v2",
-        name: "Clean Inlet B",
+        name: "Drinking Valve",
         pipelineType: "clean",
         status: "open",
         manualOverride: false,
       },
       {
         id: "b3-v3",
-        name: "Recycle Valve",
+        name: "Flushing Valve",
         pipelineType: "recycled",
         status: "closed",
         manualOverride: false,
@@ -435,21 +564,21 @@ export const initialBuildings: Building[] = [
     valves: [
       {
         id: "b4-v1",
-        name: "Main Inlet",
+        name: "Domestic Valve",
         pipelineType: "clean",
         status: "open",
         manualOverride: false,
       },
       {
         id: "b4-v2",
-        name: "Recycle Inlet",
+        name: "Drinking Valve",
         pipelineType: "recycled",
         status: "stuck",
         manualOverride: false,
       },
       {
         id: "b4-v3",
-        name: "Outlet Valve",
+        name: "Flushing Valve",
         pipelineType: "clean",
         status: "open",
         manualOverride: false,
@@ -527,21 +656,21 @@ export const initialBuildings: Building[] = [
     valves: [
       {
         id: "b5-v1",
-        name: "Supply Valve",
+        name: "Domestic Valve",
         pipelineType: "clean",
         status: "closed",
         manualOverride: false,
       },
       {
         id: "b5-v2",
-        name: "Recycle Return",
+        name: "Drinking Valve",
         pipelineType: "recycled",
         status: "open",
         manualOverride: false,
       },
       {
         id: "b5-v3",
-        name: "Outlet Valve",
+        name: "Flushing Valve",
         pipelineType: "clean",
         status: "open",
         manualOverride: false,
@@ -573,6 +702,8 @@ export const initialBuildings: Building[] = [
     lastUpdated: new Date(),
   },
 ]
+
+export const initialBuildings: Building[] = rawBuildings.map(seedValveTimestamps)
 
 const DAY_MS = 86400000
 const MAX_ALERTS = 5

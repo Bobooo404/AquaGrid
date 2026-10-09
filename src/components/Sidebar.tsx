@@ -4,13 +4,13 @@ import {
   LayoutDashboard,
   Bell,
   ScrollText,
+  MessageSquare,
   User,
   LogOut,
 } from "lucide-react";
-import aquagridLogo from "../assets/aquagrid-logo.png";
 import type { AuthUser } from "../auth/auth";
 
-type Page = "dashboard" | "buildings" | "alerts" | "logs";
+type Page = "dashboard" | "buildings" | "alerts" | "logs" | "feedback";
 
 interface SidebarProps {
   currentPage: Page;
@@ -24,6 +24,7 @@ const navItems: { id: Page; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "alerts", label: "Alerts", icon: Bell },
   { id: "logs", label: "Event Logs", icon: ScrollText },
+  { id: "feedback", label: "Feedback", icon: MessageSquare },
 ];
 
 export default function Sidebar({ currentPage, onNavigate, alertCount, user, onLogout }: SidebarProps) {
@@ -54,15 +55,15 @@ export default function Sidebar({ currentPage, onNavigate, alertCount, user, onL
       <div
         ref={logoRef}
         className="flex items-center gap-3 px-4 py-5"
-        style={{ borderBottom: "1px solid var(--border)" }}
+        style={{ borderBottom: "1px solid var(--border)", gap: "10.185px" }}
       >
         <img
-          src={aquagridLogo}
+          src="/Aquagridlogobgr.svg"
           alt="AquaGrid"
           className="flex-shrink-0 h-[37px] w-auto"
         />
         <div>
-          <div className="text-sm font-bold tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}>
+          <div className="text-sm font-medium tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "'Montserrat', sans-serif" }}>
             AquaGrid
           </div>
           <div className="text-xs" style={{ color: "var(--text-muted)" }}></div>

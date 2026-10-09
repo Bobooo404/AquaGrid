@@ -199,12 +199,19 @@ export default function Navbar({
         >
           {user.role}
         </span>
-        <img
-          src="/manu2logobgr.png"
-          alt={user.name}
-          className="w-[120px] h-auto flex-shrink-0 cursor-pointer"
+        <a
+          href="https://www.manurobotics.com"
+          target="_blank"
+          rel="noopener noreferrer"
           title={`${user.name} (${user.role})`}
-        />
+          className="flex items-center"
+        >
+          <img
+            src="/Manulogobgr.png"
+            alt={user.name}
+            className="h-30 w-auto flex-shrink-0 cursor-pointer self-center translate-y-[5%]"
+          />
+        </a>
       </div>
     </header>
   );

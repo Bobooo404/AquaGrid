@@ -159,7 +159,7 @@ export default function Management({ buildings, onAddToast }: ManagementProps) {
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>{b.name}</span>
                 <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{t.name}</span>
                 <span className="text-xs font-mono" style={{ color: t.type === "overhead" ? "var(--accent-cyan)" : "#10b981" }}>{t.type.toUpperCase()}</span>
-                <span className="text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{(t.capacity / 1000).toFixed(0)}kL</span>
+                <span className="text-xs font-mono" style={{ color: "var(--text-secondary)" }}>{(t.capacity / 1000).toFixed(0)}L</span>
                 <span className="text-xs font-mono font-bold" style={{ color: t.currentLevel < t.criticalThreshold ? "var(--danger-text)" : t.currentLevel < t.lowThreshold ? "var(--warning-text)" : "#10b981" }}>
                   {Math.round(t.currentLevel)}%
                 </span>
@@ -218,23 +218,21 @@ export default function Management({ buildings, onAddToast }: ManagementProps) {
           </div>
           <div className="rounded-2xl overflow-hidden" style={cardStyle}>
             <div className="grid text-xs font-mono uppercase tracking-wider px-5 py-3"
-              style={{ gridTemplateColumns: "1fr 1fr 90px 90px 80px 100px", ...headerStyle }}>
-              <span>Building</span><span>Valve</span><span>Status</span><span>Pipeline</span><span>Override</span><span>Actions</span>
+              style={{ gridTemplateColumns: "1.2fr 1fr 1fr 1.4fr 1fr", ...headerStyle }}>
+              <span>Valve Name</span><span>Service</span><span>Current Status</span><span>Last Updated</span><span>Control Mode</span>
             </div>
             {buildings.flatMap((b) => b.valves.map((v) => (
               <div key={v.id} className={`grid items-center px-5 py-3 ${rowHover}`}
-                style={{ gridTemplateColumns: "1fr 1fr 90px 90px 80px 100px", borderBottom: "1px solid var(--bg-primary)" }}>
-                <span className="text-xs" style={{ color: "var(--text-muted)" }}>{b.name}</span>
+                style={{ gridTemplateColumns: "1.2fr 1fr 1fr 1.4fr 1fr", borderBottom: "1px solid var(--bg-primary)" }}>
                 <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{v.name}</span>
+                <span className="text-xs font-mono" style={{ color: pipelineColors[v.pipelineType] }}>{v.pipelineType.toUpperCase()}</span>
                 <span className="text-xs font-mono font-bold" style={{ color: v.status === "open" ? "#10b981" : v.status === "stuck" ? "var(--danger-text)" : "#94a3b8" }}>
                   {v.status.toUpperCase()}
                 </span>
-                <span className="text-xs font-mono" style={{ color: pipelineColors[v.pipelineType] }}>{v.pipelineType.toUpperCase()}</span>
+                <span className="text-xs font-mono" style={{ color: "var(--text-secondary)" }}>
+                  {(v.lastUpdated ?? b.lastUpdated).toLocaleString()}
+                </span>
                 <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{v.manualOverride ? "MANUAL" : "AUTO"}</span>
-                <div className="flex gap-2">
-                  <button onClick={() => openEdit("valve", v as unknown as Record<string, unknown>)} className="p-1.5 rounded-lg hover:bg-blue-100 transition-colors" style={{ color: "var(--accent-cyan)" }}><Edit2 size={14} /></button>
-                  <button onClick={() => handleDelete(v.name)} className="p-1.5 rounded-lg hover:bg-red-50 transition-colors" style={{ color: "#ef4444" }}><Trash2 size={14} /></button>
-                </div>
               </div>
             )))}
           </div>
@@ -308,7 +306,7 @@ export default function Management({ buildings, onAddToast }: ManagementProps) {
             )}
             {modal.type === "valve" && (
               <>
-                <FieldRow label="Valve Name"><input style={inputStyle} defaultValue={(modal.item?.name as string) ?? ""} placeholder="e.g. Inlet Valve" /></FieldRow>
+                <FieldRow label="Valve Name"><input style={inputStyle} defaultValue={(modal.item?.name as string) ?? ""} placeholder="e.g. Domestic Valve" /></FieldRow>
                 <FieldRow label="Pipeline Type">
                   <select style={inputStyle} defaultValue={(modal.item?.pipelineType as string) ?? "clean"}>
                     <option value="clean">Clean Water</option>

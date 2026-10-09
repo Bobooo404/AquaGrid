@@ -1,96 +1,84 @@
-import { useEffect, useId, useRef } from "react";
-import { animate } from "animejs";
+import TankModel from "./TankModel";
+import type { InstallationStatus } from "../data/mockData";
 
 interface TankVisualProps {
   level: number; // 0-100
   capacity: number;
   name: string;
+  buildingName: string;
   type: "overhead" | "ground";
   size?: "sm" | "md" | "lg";
   showVolume?: boolean;
+  installationStatus?: InstallationStatus;
 }
 
-export default function TankVisual({ level, capacity, name, size = "md", showVolume = true }: TankVisualProps) {
-  const fillRef = useRef<SVGRectElement>(null);
-  const tankId = useId().replace(/:/g, "");
-  const clipId = `tank-clip-${tankId}`;
+const sizeMap = {
+  sm: { w: 54 },
+  md: { w: 72 },
+  lg: { w: 108 },
+};
 
-  const sizeMap = {
-    sm: { w: 69.34, h: 90, rx: 5 },
-    md: { w: 84.05, h: 106, rx: 6 },
-    lg: { w: 138.68, h: 180, rx: 8 },
-  };
-  const { w, h, rx } = sizeMap[size];
-
-  const fillColor = "#0ea5e9";
-  const fillHeight = (level / 100) * (h - 6);
-  const fillY = h - 3 - fillHeight;
-
-  useEffect(() => {
-    if (!fillRef.current) return;
-    animate(fillRef.current, {
-      height: fillHeight,
-      y: fillY,
-      duration: 800,
-      ease: "inOutQuart",
-    });
-  }, [level, fillHeight, fillY]);
+export default function TankVisual({
+  level,
+  capacity,
+  name,
+  buildingName,
+  size = "md",
+  showVolume = true,
+  installationStatus = "installed",
+}: TankVisualProps) {
+  const { w } = sizeMap[size];
+  const isInstalled = installationStatus === "installed";
+  const tankAnimationLevel = isInstalled ? (level <= 20 ? 10 : level >= 80 ? 80 : 20) : null;
 
   const liters = Math.round((level / 100) * capacity);
   const litersStr =
-    liters >= 1000 ? `${(liters / 1000).toFixed(1)}kL` : `${liters}L`;
+    liters >= 1000 ? `${(liters / 1000).toFixed(1)}L` : `${liters}L`;
+  const capacityStr = `${Math.round(capacity).toLocaleString()}L`;
 
   return (
-    <div className="flex flex-col items-center gap-1.5 min-w-0">
-      <span className="text-xs text-secondary font-mono font-bold uppercase tracking-wider">{name}</span>
+    <div className="flex min-w-0 flex-col items-center gap-1.5">
+      <span className="text-[13px] font-mono font-bold uppercase tracking-wider" style={{ color: "var(--text-primary)" }}>{name}</span>
       <div className="relative">
-        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
-          <defs>
-            <clipPath id={clipId}>
-              <rect x="3" y="3" width={w - 6} height={h - 6} rx={rx - 2} />
-            </clipPath>
-          </defs>
-
-          {/* Tank outline */}
-          <rect
-            x="1" y="1" width={w - 2} height={h - 2} rx={rx}
-            fill="var(--bg-neutral)"
-            stroke="var(--border-neutral)"
-            strokeWidth="2"
-          />
-
-          {/* Water fill */}
-          <rect
-            ref={fillRef}
-            x="3"
-            y={fillY}
-            width={w - 6}
-            height={fillHeight}
-            fill={fillColor}
-            clipPath={`url(#${clipId})`}
-          />
-
-          {/* Clear water level */}
-          {level > 2 && (
-            <line x1="3" y1={fillY} x2={w - 3} y2={fillY} stroke="#0284c7" strokeWidth="2" />
-          )}
-
-          {/* Percentage text */}
-          <text
-            x={w / 2} y={h / 2 + 5}
-            textAnchor="middle"
-            fill={fillY <= h / 2 ? "#ffffff" : "#1e3a5f"}
-            fontSize={size === "lg" ? 18 : size === "md" ? 13 : 10}
-            fontWeight="700"
-            fontFamily="'JetBrains Mono', monospace"
-          >
-            {Math.round(level)}%
-          </text>
-        </svg>
+        <TankModel
+          level={tankAnimationLevel}
+          width={w}
+          flowActive={
+            isInstalled &&
+            buildingName === "Building D1" &&
+            name.trim().toLowerCase() === "flushing"
+          }
+          ariaLabel={`${name} tank ${
+            isInstalled
+              ? `${Math.round(level)} percent full`
+              : installationStatus === "under-installation"
+                ? "under installation"
+                : "empty"
+          }`}
+        />
       </div>
-      {showVolume && (
-        <span className="text-xs font-mono font-semibold" style={{ color: fillColor }}>
-          {litersStr}
+      {showVolume && isInstalled && (
+        <div className="flex flex-col items-center gap-0.5 text-center leading-tight">
+          <span className="text-sm font-mono font-bold" style={{ color: "var(--text-primary)" }}>
+            {litersStr}
+          </span>
+          <span className="text-[10px] font-mono font-semibold" style={{ color: "var(--text-secondary)" }}>
+            Capacity {capacityStr}
+          </span>
+        </div>
+      )}
+      {!isInstalled && (
+        <span
+          className="mt-1 block w-full text-center text-[10px] font-mono font-bold uppercase leading-tight"
+          style={{
+            color:
+              installationStatus === "under-installation"
+                ? "var(--warning-text)"
+                : "var(--text-muted)",
+            whiteSpace: "pre-line",
+          }}
+        >
+          {installationStatus === "under-installation" ? "Under\nInstallation" : "Not\nInstalled"}
         </span>
       )}
     </div>

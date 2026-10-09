@@ -84,10 +84,10 @@ export default function Login({ darkMode, onToggleDark, onLogin }: LoginProps) {
       >
         {/* Brand */}
         <div className="flex flex-col items-center mb-7">
-          <img src={aquagridLogo} alt="AquaGrid" className="h-[58px] w-auto mb-3" />
+          <img src={aquagridLogo} alt="AquaGrid" className="h-[58px] w-auto" style={{ marginBottom: "10.185px" }} />
           <h1
-            className="text-xl font-bold tracking-tight"
-            style={{ color: "var(--text-primary)", fontFamily: "'JetBrains Mono', monospace" }}
+            className="text-xl font-medium tracking-tight leading-none"
+            style={{ color: "var(--text-primary)", fontFamily: "'Montserrat', sans-serif" }}
           >
             AquaGrid
           </h1>
