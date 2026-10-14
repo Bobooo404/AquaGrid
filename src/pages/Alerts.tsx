@@ -56,7 +56,7 @@ export default function AlertsPage({ alerts, onAcknowledge }: AlertsPageProps) {
   const warnCount = alerts.filter((a) => a.severity === "warning"  && !a.acknowledged).length;
 
   return (
-    <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto" style={{ background: "var(--bg-primary)" }}>
+    <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto max-sm:p-4" style={{ background: "var(--bg-primary)" }}>
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Active Alerts</h1>

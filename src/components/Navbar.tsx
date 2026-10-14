@@ -38,7 +38,7 @@ export default function Navbar({
 
   return (
     <header
-      className="flex items-center gap-4 px-4 h-14 flex-shrink-0 relative z-50"
+      className="flex items-center gap-2 px-2 sm:gap-4 sm:px-4 h-14 flex-shrink-0 relative z-50"
       style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border)", boxShadow: "0 1px 6px var(--surface-shadow-soft)" }}
     >
       <button
@@ -52,10 +52,10 @@ export default function Navbar({
       </button>
 
       {/* Building selector */}
-      <div className="relative">
+      <div className="relative min-w-0 max-w-[140px] sm:max-w-none">
         <button
           onClick={() => { setBuildingOpen((o) => !o); setAlertsOpen(false); }}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm transition-colors hover:bg-blue-50"
+          className="flex max-w-full items-center gap-2 px-3 py-1.5 rounded-xl text-sm transition-colors hover:bg-blue-50"
           style={{
             background: "var(--bg-subtle)",
             border: "1px solid var(--border-strong)",
@@ -104,7 +104,7 @@ export default function Navbar({
         )}
       </div>
 
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-2 sm:gap-3">
         {/* WS status */}
         <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono">
           {wsConnected ? (
@@ -204,12 +204,12 @@ export default function Navbar({
           target="_blank"
           rel="noopener noreferrer"
           title={`${user.name} (${user.role})`}
-          className="flex items-center"
+          className="flex h-[44.1px] w-[88.2px] flex-shrink-0 translate-y-[7%] items-center sm:h-[48.51px] sm:w-[97.02px]"
         >
           <img
             src="/Manulogobgr.png"
-            alt={user.name}
-            className="h-30 w-auto flex-shrink-0 cursor-pointer self-center translate-y-[5%]"
+            alt="Manu Robotics"
+            className="h-full w-full cursor-pointer object-cover object-center"
           />
         </a>
       </div>

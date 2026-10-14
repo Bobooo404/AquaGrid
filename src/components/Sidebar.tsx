@@ -60,10 +60,10 @@ export default function Sidebar({ currentPage, onNavigate, alertCount, user, onL
         <img
           src="/Aquagridlogobgr.png"
           alt="AquaGrid"
-          className="flex-shrink-0 h-[37px] w-auto"
+          className="flex-shrink-0 h-[37px] w-auto max-w-full"
         />
-        <div>
-          <div className="text-sm font-medium tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "'Montserrat', sans-serif" }}>
+        <div className="min-w-0">
+          <div className="text-sm font-medium tracking-tight break-words" style={{ color: "var(--text-primary)", fontFamily: "'Montserrat', sans-serif" }}>
             AquaGrid
           </div>
           <div className="text-xs" style={{ color: "var(--text-muted)" }}></div>

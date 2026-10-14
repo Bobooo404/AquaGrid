@@ -48,7 +48,7 @@ export default function TankVisual({
 
   return (
     <div className="flex min-w-0 flex-col items-center gap-1.5">
-      <span className="text-[13px] font-mono font-bold uppercase tracking-wider" style={{ color: "var(--text-primary)" }}>{name}</span>
+      <span className="text-[13px] font-mono font-bold uppercase tracking-wider text-center break-words px-0.5 max-sm:text-[11px]" style={{ color: "var(--text-primary)", maxWidth: "100%" }}>{name}</span>
       <div className="relative">
         <TankModel
           level={tankAnimationLevel}

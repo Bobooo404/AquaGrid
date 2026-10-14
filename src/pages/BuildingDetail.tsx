@@ -29,15 +29,14 @@ const HISTORY_RANGES: {
   period: string;
   points: number;
   stepMs: number;
-  interval: number;
   spread: number;
   slope: number;
 }[] = [
-  { key: "30min", label: "30 Min", period: "Last 30 min", points: 30, stepMs: 60_000, interval: 4, spread: 20, slope: 0.3 },
-  { key: "day", label: "Day", period: "Last Day", points: 24, stepMs: 3_600_000, interval: 2, spread: 24, slope: 0.8 },
-  { key: "week", label: "Week", period: "Last Week", points: 7, stepMs: 86_400_000, interval: 0, spread: 30, slope: 1.5 },
-  { key: "month", label: "Month", period: "Last Month", points: 30, stepMs: 86_400_000, interval: 4, spread: 34, slope: 0.7 },
-  { key: "year", label: "Year", period: "Last Year", points: 12, stepMs: 2_629_800_000, interval: 0, spread: 40, slope: 1.2 },
+  { key: "30min", label: "30 Min", period: "Last 30 min", points: 30, stepMs: 60_000, spread: 20, slope: 0.3 },
+  { key: "day", label: "Day", period: "Last Day", points: 24, stepMs: 3_600_000, spread: 24, slope: 0.8 },
+  { key: "week", label: "Week", period: "Last Week", points: 7, stepMs: 86_400_000, spread: 30, slope: 1.5 },
+  { key: "month", label: "Month", period: "Last Month", points: 30, stepMs: 86_400_000, spread: 34, slope: 0.7 },
+  { key: "year", label: "Year", period: "Last Year", points: 12, stepMs: 2_629_800_000, spread: 40, slope: 1.2 },
 ];
 
 const getRangeConfig = (key: HistoryRange) => HISTORY_RANGES.find((range) => range.key === key) ?? HISTORY_RANGES[1];
@@ -183,13 +182,13 @@ export default function BuildingDetail({
                 <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[1.1fr_0.8fr_0.8fr_1fr] xl:items-center">
                   <div className="min-w-0">
                     <div className="text-[10px] font-mono uppercase mb-1" style={{ color: "var(--text-muted)" }}>Valve Name</div>
-                    <div className="text-xs sm:text-[14px] font-semibold whitespace-nowrap" style={{ color: "var(--text-primary)" }}>
+                    <div className="text-xs sm:text-[14px] font-semibold break-words" style={{ color: "var(--text-primary)" }}>
                       {valve.name}
                     </div>
                   </div>
                   <div className="min-w-0">
                     <div className="text-[10px] font-mono uppercase mb-1" style={{ color: "var(--text-muted)" }}>Current Status</div>
-                    <div className="flex items-center gap-1.5 text-xs sm:text-[14px] font-mono font-bold" style={{
+                    <div className="flex items-center gap-1.5 text-xs sm:text-[14px] font-mono font-bold break-words" style={{
                       color: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "var(--danger-text)" : "var(--text-secondary)",
                     }}>
                       <Circle size={7} fill="currentColor" />
@@ -198,7 +197,7 @@ export default function BuildingDetail({
                   </div>
                   <div className="min-w-0">
                     <div className="text-[10px] font-mono uppercase mb-1" style={{ color: "var(--text-muted)" }}>Control Mode</div>
-                    <div className="text-xs sm:text-[14px] font-mono" style={{ color: "var(--text-secondary)" }}>
+                    <div className="text-xs sm:text-[14px] font-mono break-words" style={{ color: "var(--text-secondary)" }}>
                       {valve.manualOverride ? "MANUAL" : "AUTO"}
                     </div>
                   </div>
@@ -207,7 +206,7 @@ export default function BuildingDetail({
                     <button
                       onClick={() => setConfirmValve(valve.id)}
                       disabled={valve.status === "stuck" || isInstallLocked}
-                      className="w-full min-w-0 whitespace-normal break-words px-1 py-2 rounded-lg text-xs sm:text-[14px] font-mono font-bold leading-tight transition-all sm:px-3"
+                      className="w-full min-w-0 whitespace-normal break-words px-2 py-2 rounded-lg text-xs sm:text-[14px] font-mono font-bold leading-tight transition-all sm:px-3"
                       style={{
                         background: isInstallLocked || valve.status === "stuck"
                           ? "var(--bg-neutral)"
@@ -283,8 +282,8 @@ export default function BuildingDetail({
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={history}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="time" tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "monospace" }} interval={getRangeConfig(historyRange).interval} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
-              <YAxis domain={[0, 80]} ticks={[0, 20, 40, 60, 80]} tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "monospace" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} tickFormatter={(v) => `${v}%`} />
+              <XAxis dataKey="time" tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "monospace" }} interval="preserveStartEnd" minTickGap={12} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
+              <YAxis width={42} domain={[0, 80]} ticks={[0, 20, 40, 60, 80]} tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "monospace" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} tickFormatter={(v) => `${v}%`} />
               <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-strong)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "var(--text-secondary)", fontFamily: "monospace" }} />
               <Legend wrapperStyle={{ fontSize: 11, fontFamily: "monospace" }} />
               {installedTanks.map((tank, index) => (

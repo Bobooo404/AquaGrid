@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
 import {
   Building2,
@@ -126,7 +126,7 @@ function InstallationIndicator({ status }: { status: InstallationStatus }) {
   const isNotInstalled = status === "not-installed";
   return (
     <div
-      className="flex min-w-0 items-center gap-1 whitespace-nowrap text-[8px] font-mono"
+      className="flex min-w-0 items-center gap-1 whitespace-nowrap max-sm:whitespace-normal text-[8px] max-sm:text-[7px] font-mono"
       style={{
         color: isUnderInstallation
           ? "var(--warning-text)"
@@ -135,8 +135,8 @@ function InstallationIndicator({ status }: { status: InstallationStatus }) {
             : "var(--success-text)",
       }}
     >
-      {status !== "installed" && <Construction size={12} className="shrink-0" />}
-      <span>{isUnderInstallation ? "UNDER INSTALLATION" : isNotInstalled ? "NOT INSTALLED" : "INSTALLED"}</span>
+      {status !== "installed" && <Construction size={12} className="shrink-0 max-sm:h-[9px] max-sm:w-[9px]" />}
+      <span className="min-w-0">{isUnderInstallation ? "UNDER INSTALLATION" : isNotInstalled ? "NOT INSTALLED" : "INSTALLED"}</span>
     </div>
   );
 }
@@ -194,45 +194,46 @@ function BuildingCard({ building, onSelect }: { building: Building; onSelect: ()
         ))}
       </div>
 
-      {/* Valve and pipeline status legend */}
-      <div className="grid min-w-0 gap-y-1">
-        {building.valves.map((valve) => {
-          const installationStatus = getPipelineInstallationStatus(building, valve.pipelineType);
-          const active =
-            installationStatus === "installed" &&
-            building.valves.some(
-              (item) => item.pipelineType === valve.pipelineType && item.status === "open",
+        {/* Valve and pipeline status legend */}
+        <div
+          className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,0.55fr)_minmax(0,1.45fr)_16px] items-center gap-x-[5%] gap-y-1"
+          style={{ gridAutoRows: 25 }}
+        >
+          {building.valves.map((valve) => {
+            const installationStatus = getPipelineInstallationStatus(building, valve.pipelineType);
+            const active =
+              installationStatus === "installed" &&
+              building.valves.some(
+                (item) => item.pipelineType === valve.pipelineType && item.status === "open",
+              );
+            return (
+              <Fragment key={valve.id}>
+                <div className="flex min-w-0 items-center gap-1">
+                  <Circle
+                    size={8}
+                    style={{
+                      color: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--border-strong)",
+                      fill: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--border-strong)",
+                    }}
+                  />
+                  <span className="min-w-0 text-[10px] max-sm:text-[8px] font-mono leading-tight whitespace-nowrap" style={{ color: "var(--text-primary)" }}>
+                    {valve.name}
+                  </span>
+                </div>
+                <span
+                  className="min-w-0 text-[10px] max-sm:text-[8px] font-mono font-bold whitespace-nowrap"
+                  style={{
+                    color: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--text-secondary)",
+                  }}
+                >
+                  {valve.status === "stuck" ? "STUCK" : valve.status.toUpperCase()}
+                </span>
+                <InstallationIndicator status={installationStatus} />
+                <PipelineIndicator type={valve.pipelineType} active={active} />
+              </Fragment>
             );
-          return (
-            <div
-              key={valve.id}
-              className="grid min-w-0 grid-cols-[12px_minmax(0,1fr)_42px_minmax(0,112px)_24px] items-center gap-x-1"
-              style={{ minHeight: 25 }}
-            >
-              <Circle
-                size={8}
-                style={{
-                  color: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--border-strong)",
-                  fill: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--border-strong)",
-                }}
-              />
-              <span className="min-w-0 break-words text-[10px] font-mono leading-tight" style={{ color: "var(--text-primary)" }}>
-                {valve.name}
-              </span>
-              <span
-                className="text-[10px] font-mono font-bold"
-                style={{
-                  color: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "#ef4444" : "var(--text-secondary)",
-                }}
-              >
-                {valve.status === "stuck" ? "STUCK" : valve.status.toUpperCase()}
-              </span>
-              <InstallationIndicator status={installationStatus} />
-              <PipelineIndicator type={valve.pipelineType} active={active} />
-            </div>
-          );
-        })}
-      </div>
+          })}
+        </div>
     </div>
   );
 }
@@ -315,7 +316,7 @@ export default function Dashboard({ buildings, alerts, selectedSite, onSelectBui
   }, [selectedSite, search]);
 
   return (
-    <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto" style={{ background: "var(--bg-primary)" }}>
+      <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto max-sm:p-4" style={{ background: "var(--bg-primary)" }}>
       <div>
         <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>System Dashboard</h1>
         <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
@@ -324,7 +325,7 @@ export default function Dashboard({ buildings, alerts, selectedSite, onSelectBui
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-sm:grid-cols-1">
         <StatCard label="Buildings"    value={visibleBuildings.length} icon={Building2} color="var(--accent-blue)" bg="var(--bg-subtle)" sub="In current view" />
         <StatCard label="Active Pumps" value={activePumps}          icon={RotateCw}     color="var(--accent-cyan)" bg="var(--info-surface)" sub="Running now" animateValue={false} />
         <StatCard label="Low Tanks"    value={tanksBelowThreshold}  icon={Droplet}      color="var(--warning-text)" bg="var(--warning-surface)" sub="Below threshold" />

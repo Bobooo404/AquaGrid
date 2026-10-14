@@ -69,20 +69,21 @@ export default function LogsPage({ logs }: LogsPageProps) {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="grid grid-cols-1 gap-3 sm:flex sm:items-center sm:flex-wrap">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search logs..."
-          style={{ ...inputStyle, minWidth: 180 }}
+          className="w-full sm:w-auto"
+          style={{ ...inputStyle, minWidth: 0 }}
         />
-        <select value={typeFilter} onChange={(e) => setBuildingFilter2(e.target.value)} style={inputStyle}>
+        <select className="w-full sm:w-auto" value={typeFilter} onChange={(e) => setBuildingFilter2(e.target.value)} style={inputStyle}>
           <option value="all">All Types</option>
           {Object.keys(typeConfig).map((t) => (
             <option key={t} value={t}>{typeConfig[t as keyof typeof typeConfig].label}</option>
           ))}
         </select>
-        <select value={buildingFilter} onChange={(e) => setBuildingFilter(e.target.value)} style={inputStyle}>
+        <select className="w-full sm:w-auto" value={buildingFilter} onChange={(e) => setBuildingFilter(e.target.value)} style={inputStyle}>
           <option value="all">All Buildings</option>
           {buildings.map((b) => <option key={b} value={b}>{b}</option>)}
         </select>
@@ -91,7 +92,7 @@ export default function LogsPage({ logs }: LogsPageProps) {
       {/* Table */}
       <div className="rounded-2xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 1px 8px var(--surface-shadow-soft)" }}>
         <div
-          className="grid text-xs font-mono uppercase tracking-wider px-5 py-3"
+          className="hidden grid-cols-[140px_minmax(0,1fr)_80px_minmax(0,1fr)] px-5 py-3 text-xs font-mono uppercase tracking-wider sm:grid"
           style={{ gridTemplateColumns: "140px 1fr 80px 1fr", borderBottom: "1px solid var(--border)", background: "var(--bg-primary)", color: "var(--text-muted)" }}
         >
           <span>Timestamp</span><span>Event</span><span>Type</span><span>Building</span>
@@ -103,21 +104,21 @@ export default function LogsPage({ logs }: LogsPageProps) {
             return (
               <div
                 key={log.id}
-                className="grid px-5 py-3 text-sm items-center hover:bg-blue-50 transition-colors"
-                style={{ gridTemplateColumns: "140px 1fr 80px 1fr", borderBottom: "1px solid var(--bg-primary)" }}
+                className="grid grid-cols-2 items-center gap-x-3 gap-y-1 px-4 py-3 text-sm transition-colors hover:bg-blue-50 sm:grid-cols-[140px_minmax(0,1fr)_80px_minmax(0,1fr)] sm:gap-0 sm:px-5"
+                style={{ borderBottom: "1px solid var(--bg-primary)" }}
               >
-                <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+                <span className="col-start-1 row-start-1 text-xs font-mono sm:col-auto sm:row-auto" style={{ color: "var(--text-muted)" }}>
                   {log.timestamp.toLocaleDateString([], { month: "short", day: "2-digit" })}{" "}
                   {log.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
-                <span className="pr-4 font-medium" style={{ color: "var(--text-primary)" }}>{log.event}</span>
-                <span>
+                <span className="col-span-2 row-start-2 break-words font-medium sm:col-span-1 sm:row-auto sm:pr-4" style={{ color: "var(--text-primary)" }}>{log.event}</span>
+                <span className="col-start-2 row-start-1 justify-self-end sm:col-auto sm:row-auto sm:justify-self-start">
                   <span className="flex items-center gap-1 text-xs font-mono px-1.5 py-0.5 rounded-lg w-fit"
                     style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
                     <Icon size={10} /> {cfg.label}
                   </span>
                 </span>
-                <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{log.buildingName}</span>
+                <span className="col-span-2 row-start-3 text-xs sm:col-span-1 sm:row-auto" style={{ color: "var(--text-secondary)" }}>{log.buildingName}</span>
               </div>
             );
           })}

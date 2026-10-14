@@ -154,18 +154,18 @@ export default function TankStatusTile({ type, data, flowEnabled = false }: Tank
         }}
       />
 
-      <div className="grid min-w-0 flex-1 grid-cols-1 gap-5 p-5 md:grid-cols-[200px_minmax(0,1fr)]">
+      <div className="grid min-w-0 flex-1 grid-cols-1 gap-5 p-5 md:grid-cols-[200px_minmax(0,1fr)] max-sm:p-4">
         <div className="flex min-w-0 flex-col gap-3">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2 max-sm:flex-col max-sm:items-start">
           <h3
-            className="text-sm font-mono font-bold uppercase tracking-widest"
+            className="text-sm font-mono font-bold uppercase tracking-widest break-words"
             style={{ color: "var(--text-primary)" }}
           >
             {data.name} Tank
           </h3>
           {installed && (
             <span
-              className="flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-wider whitespace-nowrap"
+              className="flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-wider whitespace-nowrap max-sm:self-start"
               style={{ background: meta.surface, color: meta.color, border: `1px solid ${meta.border}` }}
             >
               <StatusDot color={meta.color} />
@@ -213,18 +213,22 @@ export default function TankStatusTile({ type, data, flowEnabled = false }: Tank
             label="Status"
             color={valveMeta.color}
             value={
-              <>
+              <span className="flex min-w-0 items-center justify-end gap-1.5 truncate">
                 <StatusDot color={valveMeta.color} />
-                {data.valve.status === "unavailable" ? "—" : valveMeta.label}
-              </>
+                <span className="truncate">
+                  {data.valve.status === "unavailable" ? "—" : valveMeta.label}
+                </span>
+              </span>
             }
           />
-          <Row label="Control mode">{controlModeLabel}</Row>
+          <Row label="Control mode">
+            <span className="truncate">{controlModeLabel}</span>
+          </Row>
           <Row label="Last open">
-            {data.valve.lastOpenedAt ? formatTimestamp(data.valve.lastOpenedAt) : "—"}
+            <span className="truncate">{data.valve.lastOpenedAt ? formatTimestamp(data.valve.lastOpenedAt) : "—"}</span>
           </Row>
           <Row label="Last close">
-            {data.valve.lastClosedAt ? formatTimestamp(data.valve.lastClosedAt) : "—"}
+            <span className="truncate">{data.valve.lastClosedAt ? formatTimestamp(data.valve.lastClosedAt) : "—"}</span>
           </Row>
         </Section>
 
@@ -233,28 +237,28 @@ export default function TankStatusTile({ type, data, flowEnabled = false }: Tank
             label="Status"
             color={pipelineMeta.color}
             value={
-              <>
+              <span className="flex min-w-0 items-center justify-end gap-1.5 truncate">
                 <StatusDot color={pipelineMeta.color} />
-                {pipelineMeta.label}
-              </>
+                <span className="truncate">{pipelineMeta.label}</span>
+              </span>
             }
           />
           <Row
             label="Flow"
             color={data.pipeline.flowRate === null ? "var(--text-muted)" : undefined}
           >
-            {flowLabel}
+            <span className="truncate">{flowLabel}</span>
           </Row>
           <Row label="Last open">
-            {data.pipeline.lastOpenedAt ? formatTimestamp(data.pipeline.lastOpenedAt) : "—"}
+            <span className="truncate">{data.pipeline.lastOpenedAt ? formatTimestamp(data.pipeline.lastOpenedAt) : "—"}</span>
           </Row>
           <Row label="Last close">
-            {data.pipeline.lastClosedAt ? formatTimestamp(data.pipeline.lastClosedAt) : "—"}
+            <span className="truncate">{data.pipeline.lastClosedAt ? formatTimestamp(data.pipeline.lastClosedAt) : "—"}</span>
           </Row>
         </Section>
 
         <Section title="Thresholds">
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-4 gap-1.5 max-sm:grid-cols-2">
             <ThresholdChip
               label="Level"
               value={showThresholdValues && level !== null ? `${Math.round(level)}%` : "-"}
