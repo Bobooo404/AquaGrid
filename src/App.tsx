@@ -8,7 +8,7 @@ import LogsPage from "./pages/Logs";
 import FeedbackPage from "./pages/Feedback";
 import { useSimulation } from "./hooks/useSimulation";
 import Login from "./pages/Login";
-import { loadSession, logout as clearSession, type AuthUser } from "./auth/auth";
+import { logout as clearSession, type AuthUser } from "./auth/auth";
 import { applyDisplayStatus } from "./data/mockData";
 
 type Page = "dashboard" | "buildings" | "alerts" | "logs" | "feedback";
@@ -20,7 +20,7 @@ export default function App() {
   const [detailBuildingId, setDetailBuildingId] = useState<string | null>(null);
   const [detailBuildingName, setDetailBuildingName] = useState<string | null>(null);
   const [selectedSite, setSelectedSite] = useState<string | null>(() => localStorage.getItem("aquaflow-site"));
-  const [user, setUser] = useState<AuthUser | null>(() => loadSession());
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   const {
     buildings,

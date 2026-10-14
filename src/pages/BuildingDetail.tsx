@@ -142,7 +142,7 @@ export default function BuildingDetail({
   const rowStyle  = { background: "var(--bg-primary)", border: "1px solid var(--border)" };
 
   return (
-    <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto" style={{ background: "var(--bg-primary)" }}>
+    <div className="flex min-w-0 flex-col gap-6 p-6 max-sm:gap-4 max-sm:p-4 h-full overflow-y-auto" style={{ background: "var(--bg-primary)" }}>
       {/* Header */}
       <div>
         <button onClick={onBack} className="flex items-center gap-2 text-sm transition-colors hover:opacity-80 w-fit px-3 py-1.5 rounded-xl" style={{ background: "var(--info-surface)", color: "var(--accent-cyan)" }}>
@@ -164,7 +164,7 @@ export default function BuildingDetail({
 
       {/* Valve Controls */}
       {isAdmin && (
-      <div className="h-full rounded-2xl p-5" style={cardStyle}>
+      <div className="min-w-0 rounded-2xl p-4 sm:p-5" style={cardStyle}>
         <h2 className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>Valve Controls</h2>
         <div className="flex flex-col gap-2">
           {building.valves.map((valve) => {
@@ -178,7 +178,7 @@ export default function BuildingDetail({
                   ? "CLOSE"
                   : "OPEN";
             return (
-              <div key={valve.id} className="w-full rounded-xl p-3" style={rowStyle}>
+              <div key={valve.id} className="w-full min-w-0 rounded-xl p-3" style={rowStyle}>
                 <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[1.1fr_0.8fr_0.8fr_1fr] xl:items-center">
                   <div className="min-w-0">
                     <div className="text-[10px] font-mono uppercase mb-1" style={{ color: "var(--text-muted)" }}>Valve Name</div>
@@ -308,23 +308,23 @@ export default function BuildingDetail({
         )}
 
         {/* Thresholds */}
-        <div className="order-1 rounded-2xl p-5" style={cardStyle}>
+        <div className="order-1 min-w-0 rounded-2xl p-4 sm:p-5" style={cardStyle}>
             <h2 className="text-[12.36px] font-mono uppercase tracking-widest mb-4 flex items-center gap-2" style={{ color: "var(--text-muted)" }}>
               <Sliders size={14} /> Threshold Settings
             </h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-x-3 gap-y-4 sm:gap-4">
               {building.tanks.flatMap((tank) => [
                 { label: `${tank.name} Low %`, key: `${tank.id}-low`, color: "var(--warning-text)", bg: "var(--warning-surface)", border: "var(--warning-border)" },
                 { label: `${tank.name} Critical %`, key: `${tank.id}-crit`, color: "var(--danger-text)", bg: "var(--danger-surface)", border: "var(--danger-border)" },
               ]).map((field) => (
-                <div key={field.key}>
-                  <label className="text-[12.36px] font-mono mb-1 block" style={{ color: "var(--text-muted)" }}>{field.label}</label>
+                <div key={field.key} className="min-w-0">
+                  <label className="mb-1 block min-h-[2.5em] text-[10px] leading-tight sm:text-[12.36px] font-mono" style={{ color: "var(--text-muted)" }}>{field.label}</label>
                   <input
                     type="number"
                     value={thresholds[field.key] ?? 0}
                     onChange={(e) => setThresholds((prev) => ({ ...prev, [field.key]: Number(e.target.value) }))}
                     min="0" max="100"
-                    className="w-full px-3 py-2 rounded-xl text-[14.42px] font-mono outline-none"
+                    className="w-full min-w-0 px-2 py-2 sm:px-3 rounded-xl text-[12px] sm:text-[14.42px] font-mono outline-none"
                     style={{ background: field.bg, border: `1px solid ${field.border}`, color: field.color }}
                   />
                 </div>
