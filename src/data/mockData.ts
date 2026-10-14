@@ -131,6 +131,9 @@ export const applyDisplayStatus = (building: Building, name: string): Building =
         status: building.refillMode === 1 ? "open" as const : "closed" as const,
       }
     }
+    if (name === "Building F2" && valve.status === "stuck") {
+      return { ...valve, status: "closed" as const }
+    }
     if (valve.manualOverride || valve.status === "stuck") return valve
     if (name === "Building D1") {
       if (label === "flushing") {
