@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, Sun, Moon, ArrowRight } from "lucide-react";
-import aquagridLogo from "../assets/aquagrid-logo.png";
 import { login, type AuthUser } from "../auth/auth";
 
 interface LoginProps {
@@ -84,7 +83,7 @@ export default function Login({ darkMode, onToggleDark, onLogin }: LoginProps) {
       >
         {/* Brand */}
         <div className="flex flex-col items-center mb-7">
-          <img src={aquagridLogo} alt="AquaGrid" className="h-[58px] w-auto" style={{ marginBottom: "10.185px" }} />
+          <img src="/Aquagridlogobgr.png" alt="AquaGrid" className="h-[58px] w-auto" style={{ marginBottom: "10.185px" }} />
           <h1
             className="text-xl font-medium tracking-tight leading-none"
             style={{ color: "var(--text-primary)", fontFamily: "'Montserrat', sans-serif" }}

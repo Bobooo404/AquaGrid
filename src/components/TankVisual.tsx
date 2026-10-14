@@ -5,11 +5,12 @@ interface TankVisualProps {
   level: number; // 0-100
   capacity: number;
   name: string;
-  buildingName: string;
   type: "overhead" | "ground";
   size?: "sm" | "md" | "lg";
   showVolume?: boolean;
   installationStatus?: InstallationStatus;
+  flowActive?: boolean;
+  exactLevel?: boolean;
 }
 
 const sizeMap = {
@@ -22,14 +23,23 @@ export default function TankVisual({
   level,
   capacity,
   name,
-  buildingName,
   size = "md",
   showVolume = true,
   installationStatus = "installed",
+  flowActive = false,
+  exactLevel = false,
 }: TankVisualProps) {
   const { w } = sizeMap[size];
   const isInstalled = installationStatus === "installed";
-  const tankAnimationLevel = isInstalled ? (level <= 20 ? 10 : level >= 80 ? 80 : 20) : null;
+  const tankAnimationLevel = isInstalled
+    ? exactLevel
+      ? level
+      : level <= 20
+        ? 10
+        : level >= 80
+          ? 80
+          : 20
+    : null;
 
   const liters = Math.round((level / 100) * capacity);
   const litersStr =
@@ -43,11 +53,7 @@ export default function TankVisual({
         <TankModel
           level={tankAnimationLevel}
           width={w}
-          flowActive={
-            isInstalled &&
-            buildingName === "Building D1" &&
-            name.trim().toLowerCase() === "flushing"
-          }
+          flowActive={isInstalled && flowActive}
           ariaLabel={`${name} tank ${
             isInstalled
               ? `${Math.round(level)} percent full`

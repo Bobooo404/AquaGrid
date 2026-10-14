@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from "react";
-import { MessageSquare, Send, CheckCircle2, Star } from "lucide-react";
+import { useRef, useState, type FormEvent } from "react";
+import { AlertCircle, Loader2, MessageSquare, Send, CheckCircle2, Star } from "lucide-react";
 import type { AuthUser } from "../auth/auth";
+import { feedbackService } from "../lib/services/feedbackService";
 
 interface FeedbackPageProps {
   user: AuthUser;
@@ -22,16 +23,49 @@ export default function FeedbackPage({ user }: FeedbackPageProps) {
   const [message, setMessage] = useState("");
   const [rating, setRating] = useState(0);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionInProgress = useRef(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
-    setCategory("general");
-    setSubject("");
-    setMessage("");
-    setRating(0);
-    setSent(true);
-    window.setTimeout(() => setSent(false), 4000);
+    if (submissionInProgress.current || !message.trim()) return;
+
+    submissionInProgress.current = true;
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const response = await feedbackService.submitFeedback({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        category,
+        subject,
+        rating,
+        message,
+      });
+
+      if (!response.success) {
+        throw new Error(response.message || "Feedback could not be sent.");
+      }
+
+      setCategory("general");
+      setSubject("");
+      setMessage("");
+      setRating(0);
+      setSent(true);
+      window.setTimeout(() => setSent(false), 4000);
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Unable to send your feedback. Please try again."
+      );
+    } finally {
+      submissionInProgress.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   const cardStyle = {
@@ -122,17 +156,27 @@ export default function FeedbackPage({ user }: FeedbackPageProps) {
             </div>
           )}
 
+          {error && (
+            <div
+              className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg alert-enter"
+              style={{ background: "var(--danger-surface)", border: "1px solid var(--danger-border)", color: "var(--danger-text)" }}
+            >
+              <AlertCircle size={14} /> {error}
+            </div>
+          )}
+
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
               Submitting as {user.name} · {user.role}
             </span>
             <button
               type="submit"
-              disabled={!message.trim()}
+              disabled={!message.trim() || isSubmitting}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-mono font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(90deg, var(--accent-cyan), var(--accent-blue))" }}
             >
-              <Send size={14} /> Send Feedback
+              {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+              {isSubmitting ? "Sending..." : "Send Feedback"}
             </button>
           </div>
         </form>

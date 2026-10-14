@@ -1,0 +1,386 @@
+/*
+ * AquaGrid integration stylesheet.
+ *
+ * This file is imported only by src/aquagrid/AquaGridApp.tsx.
+ *
+ * Isolation strategy:
+ *  - Every rule is scoped under [data-aquagrid], which is set on AquaGrid's
+ *    own root element(s), so nothing here can leak into Manu Robotics pages.
+ *  - Tailwind utilities are NOT imported here on purpose. Manu already runs a
+ *    single Tailwind v4 build (src/styles/global.css) whose source detection
+ *    covers src/aquagrid/**, so all utility classes used by AquaGrid are
+ *    already generated. This avoids loading Tailwind/preflight twice and any
+ *    layer-order surprises.
+ *  - Manu's global element rules (index.css `button`/`h1`/`a` and global.css
+ *    `*`) are plain/!important declarations outside @layer, so they would
+ *    otherwise override Tailwind utilities on AquaGrid elements. The
+ *    `revert-layer` counters below roll the cascade back to the Tailwind
+ *    layers for AquaGrid scopes only, restoring the original AquaGrid look.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Theme variables (scoped copies of AquaGrid's :root / [data-theme])  */
+/* ------------------------------------------------------------------ */
+[data-aquagrid] {
+  --bg-primary: #e8e6df;
+  --bg-secondary: #dfddd5;
+  --bg-card: #f0efe9;
+  --bg-card-hover: #e7e5dd;
+  --bg-subtle: #e1dfd7;
+  --bg-neutral: #e6e4dd;
+  --border: #d2cfc5;
+  --border-strong: #bdb9ad;
+  --border-neutral: #d2cfc5;
+  --accent-cyan: #43869a;
+  --accent-blue: #3f7187;
+  --text-primary: #303a3d;
+  --text-secondary: #566369;
+  --text-muted: #6b7679;
+  --surface-shadow-soft: rgba(42, 51, 54, 0.06);
+  --surface-shadow: rgba(42, 51, 54, 0.12);
+  --surface-shadow-strong: rgba(42, 51, 54, 0.16);
+  --ambient-glow: rgba(83, 130, 144, 0.06);
+  --ambient-glow-secondary: rgba(108, 126, 132, 0.05);
+  --danger-surface: #fef2f2;
+  --danger-border: #fca5a5;
+  --danger-text: #dc2626;
+  --warning-surface: #fffbeb;
+  --warning-border: #fcd34d;
+  --warning-text: #d97706;
+  --close-surface: #ffedd5;
+  --close-border: #fdba74;
+  --close-text: #ea580c;
+  --success-surface: #f0fdf4;
+  --success-border: #86efac;
+  --success-text: #16a34a;
+  --info-surface: #e0f2fe;
+  --purple-surface: #f5f3ff;
+  --tank-shell: #e2e1da;
+  --tank-inner-border: #9db8bd;
+  --tank-tick: #42626b;
+  --tank-label: #ffffff;
+  --tank-label-stroke: rgba(15, 35, 58, 0.78);
+  --tank-fitting: #49666e;
+  --tank-body-a: #ffffff;
+  --tank-body-b: #eef1f5;
+  --tank-body-c: #d5dbe2;
+  --tank-body-d: #b8c1cb;
+  --tank-metal-a: #fbfcfd;
+  --tank-metal-b: #b4bfc9;
+  --tank-metal-c: #8a96a2;
+  --tank-edge: #8f9ba7;
+  --tank-rim: rgba(255, 255, 255, 0.95);
+  --tank-void: #dae0e6;
+  --tank-track: rgba(48, 58, 61, 0.12);
+  --tank-accent: #0e7490;
+  --tank-accent-glow: rgba(14, 116, 144, 0.45);
+  --tank-backdrop: #ffffff;
+  --tank-shadow: rgba(30, 41, 59, 0.25);
+  color-scheme: light;
+  font-family: "Inter", "DM Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+[data-aquagrid][data-theme="dark"] {
+  --bg-primary: #07111f;
+  --bg-secondary: #0a1728;
+  --bg-card: #0f1f33;
+  --bg-card-hover: #142943;
+  --bg-subtle: #122741;
+  --bg-neutral: #101c2c;
+  --border: #1d3855;
+  --border-strong: #2d5378;
+  --border-neutral: #263c53;
+  --accent-cyan: #38bdf8;
+  --accent-blue: #60a5fa;
+  --text-primary: #e7f2ff;
+  --text-secondary: #b8d3ed;
+  --text-muted: #7fa5c8;
+  --surface-shadow-soft: rgba(0, 0, 0, 0.18);
+  --surface-shadow: rgba(0, 0, 0, 0.28);
+  --surface-shadow-strong: rgba(0, 0, 0, 0.38);
+  --ambient-glow: rgba(56, 189, 248, 0.14);
+  --ambient-glow-secondary: rgba(96, 165, 250, 0.1);
+  --danger-surface: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(248, 113, 113, 0.48);
+  --danger-text: #f87171;
+  --warning-surface: rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(251, 191, 36, 0.48);
+  --warning-text: #fbbf24;
+  --close-surface: rgba(249, 115, 22, 0.14);
+  --close-border: rgba(251, 146, 60, 0.48);
+  --close-text: #fdba74;
+  --success-surface: rgba(16, 185, 129, 0.12);
+  --success-border: rgba(52, 211, 153, 0.45);
+  --success-text: #34d399;
+  --info-surface: rgba(14, 165, 233, 0.12);
+  --purple-surface: rgba(139, 92, 246, 0.14);
+  --tank-shell: #081525;
+  --tank-inner-border: #31577b;
+  --tank-tick: #7fa5c8;
+  --tank-label: #f8fbff;
+  --tank-label-stroke: rgba(3, 10, 20, 0.88);
+  --tank-fitting: #4d7195;
+  --tank-body-a: #414e5b;
+  --tank-body-b: #28323d;
+  --tank-body-c: #1a222b;
+  --tank-body-d: #111820;
+  --tank-metal-a: #a3b4c4;
+  --tank-metal-b: #4f6070;
+  --tank-metal-c: #2b3641;
+  --tank-edge: #5b6f82;
+  --tank-rim: rgba(56, 189, 248, 0.6);
+  --tank-void: #060b12;
+  --tank-track: rgba(0, 0, 0, 0.5);
+  --tank-accent: #22d3ee;
+  --tank-accent-glow: rgba(34, 211, 238, 0.6);
+  --tank-backdrop: #04090f;
+  --tank-shadow: rgba(0, 0, 0, 0.65);
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ */
+/* Custom classes (scoped copies of AquaGrid's global helpers)         */
+/* ------------------------------------------------------------------ */
+[data-aquagrid].bg-app,
+[data-aquagrid] .bg-app {
+  background: var(--bg-primary);
+}
+[data-aquagrid].text-primary,
+[data-aquagrid] .text-primary {
+  color: var(--text-primary);
+}
+[data-aquagrid].text-secondary,
+[data-aquagrid] .text-secondary {
+  color: var(--text-secondary);
+}
+[data-aquagrid].text-muted,
+[data-aquagrid] .text-muted {
+  color: var(--text-muted);
+}
+[data-aquagrid].tank-bank,
+[data-aquagrid] .tank-bank {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+}
+
+[data-aquagrid][data-theme="light"] .hover\:bg-blue-50:hover,
+[data-aquagrid][data-theme="light"] .hover\:bg-blue-100:hover,
+[data-aquagrid][data-theme="dark"] .hover\:bg-blue-50:hover,
+[data-aquagrid][data-theme="dark"] .hover\:bg-blue-100:hover {
+  background-color: var(--bg-card-hover);
+}
+[data-aquagrid][data-theme="dark"] .hover\:bg-red-50:hover {
+  background-color: rgba(239, 68, 68, 0.12);
+}
+
+[data-aquagrid] .glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 8px var(--surface-shadow-soft), 0 0 0 0 transparent;
+}
+
+[data-aquagrid] .water-glow {
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.2), 0 0 40px rgba(14, 165, 233, 0.08);
+}
+
+/* ------------------------------------------------------------------ */
+/* Counter overrides for Manu's unlayered global element rules         */
+/* revert-layer rolls the cascade back to the Tailwind layers, so       */
+/* AquaGrid's utilities / preflight behave as in the original app.      */
+/* ------------------------------------------------------------------ */
+[data-aquagrid] button {
+  padding: revert-layer;
+  border: revert-layer;
+  border-radius: revert-layer;
+  background-color: revert-layer;
+  font-family: revert-layer;
+  font-size: revert-layer;
+  font-weight: revert-layer;
+  cursor: revert-layer;
+  transition: revert-layer;
+}
+
+[data-aquagrid] h1,
+[data-aquagrid] h2,
+[data-aquagrid] h3,
+[data-aquagrid] h4,
+[data-aquagrid] h5,
+[data-aquagrid] h6 {
+  font-family: revert-layer;
+  font-size: revert-layer;
+  font-weight: revert-layer;
+  line-height: revert-layer;
+}
+
+[data-aquagrid] a {
+  color: revert-layer;
+  font-weight: revert-layer;
+}
+[data-aquagrid] a:hover {
+  color: revert-layer;
+}
+[data-aquagrid] a[href] {
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
+/* Scoped scrollbar                                                    */
+/* ------------------------------------------------------------------ */
+[data-aquagrid] ::-webkit-scrollbar {
+  display: block;
+  width: 4px;
+  height: 4px;
+}
+[data-aquagrid] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-aquagrid] ::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 2px;
+}
+[data-aquagrid] ::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* ------------------------------------------------------------------ */
+/* Animations (keyframes are global but only referenced by AquaGrid)   */
+/* ------------------------------------------------------------------ */
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+@keyframes flow-dash-reverse {
+  to {
+    stroke-dashoffset: 20;
+  }
+}
+
+[data-aquagrid] .flow-active {
+  stroke-dasharray: 8 4;
+  animation: flow-dash 0.8s linear infinite;
+}
+[data-aquagrid] .flow-sewage {
+  stroke-dasharray: 6 6;
+  animation: flow-dash 1.2s linear infinite;
+}
+[data-aquagrid] .flow-recycled {
+  stroke-dasharray: 8 4;
+  animation: flow-dash-reverse 1s linear infinite;
+}
+
+@keyframes pump-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+[data-aquagrid] .pump-running {
+  animation: pump-spin 1.5s linear infinite;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+[data-aquagrid] .pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes toast-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+[data-aquagrid] .toast-enter {
+  animation: toast-in 0.3s ease-out;
+}
+
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+[data-aquagrid] .count-enter {
+  animation: count-up 0.4s ease-out;
+}
+
+@keyframes alert-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+[data-aquagrid] .alert-enter {
+  animation: alert-in 0.3s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+[data-aquagrid] .ripple {
+  animation: ripple 1.5s ease-out infinite;
+}
+
+@keyframes tank-shimmer {
+  0%,
+  100% {
+    transform: translateX(-5px);
+    opacity: 0.18;
+  }
+  50% {
+    transform: translateX(5px);
+    opacity: 0.45;
+  }
+}
+[data-aquagrid] .tank-shimmer {
+  animation: tank-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes tank-led {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+[data-aquagrid] .tank-led {
+  animation: tank-led 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-aquagrid] .tank-shimmer {
+    animation: none;
+  }
+  [data-aquagrid] .tank-led {
+    animation: none;
+  }
+}

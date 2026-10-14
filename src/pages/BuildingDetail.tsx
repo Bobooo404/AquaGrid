@@ -183,15 +183,13 @@ export default function BuildingDetail({
                 <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[1.1fr_0.8fr_0.8fr_1fr] xl:items-center">
                   <div className="min-w-0">
                     <div className="text-[10px] font-mono uppercase mb-1" style={{ color: "var(--text-muted)" }}>Valve Name</div>
-                    <div className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>
-                      {valve.name.replace(/\s+valve$/i, "")}
-                      <br />
-                      valve
+                    <div className="text-xs sm:text-[14px] font-semibold whitespace-nowrap" style={{ color: "var(--text-primary)" }}>
+                      {valve.name}
                     </div>
                   </div>
                   <div className="min-w-0">
                     <div className="text-[10px] font-mono uppercase mb-1" style={{ color: "var(--text-muted)" }}>Current Status</div>
-                    <div className="flex items-center gap-1.5 text-xs font-mono font-bold" style={{
+                    <div className="flex items-center gap-1.5 text-xs sm:text-[14px] font-mono font-bold" style={{
                       color: valve.status === "open" ? "#10b981" : valve.status === "stuck" ? "var(--danger-text)" : "var(--text-secondary)",
                     }}>
                       <Circle size={7} fill="currentColor" />
@@ -200,7 +198,7 @@ export default function BuildingDetail({
                   </div>
                   <div className="min-w-0">
                     <div className="text-[10px] font-mono uppercase mb-1" style={{ color: "var(--text-muted)" }}>Control Mode</div>
-                    <div className="text-xs font-mono" style={{ color: "var(--text-secondary)" }}>
+                    <div className="text-xs sm:text-[14px] font-mono" style={{ color: "var(--text-secondary)" }}>
                       {valve.manualOverride ? "MANUAL" : "AUTO"}
                     </div>
                   </div>
@@ -209,7 +207,7 @@ export default function BuildingDetail({
                     <button
                       onClick={() => setConfirmValve(valve.id)}
                       disabled={valve.status === "stuck" || isInstallLocked}
-                      className="w-full min-w-0 whitespace-normal break-words px-1 py-2 rounded-lg text-xs font-mono font-bold leading-tight transition-all sm:px-3"
+                      className="w-full min-w-0 whitespace-normal break-words px-1 py-2 rounded-lg text-xs sm:text-[14px] font-mono font-bold leading-tight transition-all sm:px-3"
                       style={{
                         background: isInstallLocked || valve.status === "stuck"
                           ? "var(--bg-neutral)"

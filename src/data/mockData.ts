@@ -59,6 +59,7 @@ export interface Building {
   valves: Valve[]
   pipelines: Pipeline[]
   lastUpdated: Date
+  refillMode?: 0 | 1
 }
 
 export type BuildingStatus = "critical" | "attention" | "normal"
@@ -122,9 +123,16 @@ export const applyDisplayStatus = (building: Building, name: string): Building =
   })
 
   const valves = building.valves.map((valve) => {
+    const label = valve.name.replace(/\s+valve$/i, "").toLowerCase()
+    if (name === "Building D1" && label === "flushing" && building.refillMode !== undefined) {
+      return {
+        ...valve,
+        pipelineType: "sewage" as const,
+        status: building.refillMode === 1 ? "open" as const : "closed" as const,
+      }
+    }
     if (valve.manualOverride || valve.status === "stuck") return valve
     if (name === "Building D1") {
-      const label = valve.name.replace(/\s+valve$/i, "").toLowerCase()
       if (label === "flushing") {
         return {
           ...valve,

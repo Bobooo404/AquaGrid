@@ -29,6 +29,10 @@ function autoControl(building: Building): Building {
 
   // Auto-open/close valves based on overhead level
   updated.valves = building.valves.map((valve) => {
+    if (
+      building.refillMode !== undefined &&
+      valve.name.replace(/\s+valve$/i, "").trim().toLowerCase() === "flushing"
+    ) return valve;
     if (valve.manualOverride || valve.status === "stuck") return valve;
     if (valve.pipelineType === "clean") {
       if (overhead.currentLevel < 40 && valve.status !== "open") {
@@ -47,6 +51,31 @@ function autoControl(building: Building): Building {
 }
 
 const emptyBuildings: Building[] = [];
+const refillModeUrl = "https://server.manurobotics.com/auto_logs/get_refill_mode";
+const sensorLevelUrl = "https://server.manurobotics.com/auto_logs/get_sensor_level";
+const d1SourceBuildingId = initialBuildings[0]?.id;
+
+function readApiNumber(payload: unknown, field: "mode" | "level"): number {
+  if (typeof payload !== "object" || payload === null || !(field in payload)) {
+    throw new Error(`API response is missing "${field}"`);
+  }
+
+  const value: unknown = Reflect.get(payload, field);
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`API response "${field}" must be a finite number`);
+  }
+  return value;
+}
+
+async function fetchApiNumber(url: string, field: "mode" | "level", signal: AbortSignal) {
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+
+  const payload: unknown = await response.json();
+  return readApiNumber(payload, field);
+}
 
 export function useSimulation(selectedSite: string | null) {
   const [buildings, setBuildings] = useState<Building[]>(initialBuildings);
@@ -56,6 +85,7 @@ export function useSimulation(selectedSite: string | null) {
   const [toasts, setToasts] = useState<{ id: string; message: string; type: "success" | "warning" | "error" }[]>([]);
   const [wsConnected, setWsConnected] = useState(false);
   const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
+  const sensorLevelRef = useRef<number | null>(null);
   const monitoredBuildings = useMemo(
     () => (selectedSite ? getMonitoredBuildings(buildings) : emptyBuildings),
     [buildings, selectedSite],
@@ -71,6 +101,96 @@ export function useSimulation(selectedSite: string | null) {
   useEffect(() => {
     setLogs(generateLogs(initialBuildings));
   }, []);
+
+  useEffect(() => {
+    if (!selectedSite || !d1SourceBuildingId) return;
+
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const controllers = new Set<AbortController>();
+
+    const refresh = async () => {
+      const controller = new AbortController();
+      controllers.add(controller);
+      const [modeResult, levelResult] = await Promise.allSettled([
+        fetchApiNumber(refillModeUrl, "mode", controller.signal),
+        fetchApiNumber(sensorLevelUrl, "level", controller.signal),
+      ]);
+      controllers.delete(controller);
+
+      if (cancelled) return;
+
+      if (modeResult.status === "fulfilled") {
+        const mode = modeResult.value;
+        if (mode !== 0 && mode !== 1) {
+          console.error("Invalid refill mode from API: expected 0 or 1.");
+        } else {
+          const status = mode === 1 ? "open" : "closed";
+          setBuildings((previous) =>
+            previous.map((building) => {
+              if (building.id !== d1SourceBuildingId) return building;
+              const changedAt = new Date();
+              return {
+                ...building,
+                refillMode: mode,
+                lastUpdated: changedAt,
+                valves: building.valves.map((valve) => {
+                  if (valve.name.replace(/\s+valve$/i, "").trim().toLowerCase() !== "flushing") {
+                    return valve;
+                  }
+                  if (valve.status === status) return valve;
+                  return {
+                    ...valve,
+                    status,
+                    lastUpdated: changedAt,
+                    ...(status === "open"
+                      ? { lastOpenedAt: changedAt }
+                      : { lastClosedAt: changedAt }),
+                  };
+                }),
+              };
+            }),
+          );
+        }
+      } else if (!(modeResult.reason instanceof Error && modeResult.reason.name === "AbortError")) {
+        console.error("Failed to fetch refill mode:", modeResult.reason);
+      }
+
+      if (levelResult.status === "fulfilled") {
+        const level = levelResult.value;
+        if (level < 0 || level > 100) {
+          console.error("Invalid sensor level from API: expected a value from 0 to 100.");
+        } else {
+          sensorLevelRef.current = level;
+          setBuildings((previous) =>
+            previous.map((building) => {
+              if (building.id !== d1SourceBuildingId) return building;
+              return {
+                ...building,
+                lastUpdated: new Date(),
+                tanks: building.tanks.map((tank) =>
+                  tank.name.trim().toLowerCase() === "flushing"
+                    ? { ...tank, currentLevel: level }
+                    : tank,
+                ),
+              };
+            }),
+          );
+        }
+      } else if (!(levelResult.reason instanceof Error && levelResult.reason.name === "AbortError")) {
+        console.error("Failed to fetch sensor level:", levelResult.reason);
+      }
+
+      if (!cancelled) timeoutId = setTimeout(refresh, 5000);
+    };
+
+    void refresh();
+    return () => {
+      cancelled = true;
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      controllers.forEach((controller) => controller.abort());
+    };
+  }, [selectedSite]);
 
   useEffect(() => {
     if (monitoredBuildings.length === 0) {
@@ -176,6 +296,11 @@ export function useSimulation(selectedSite: string | null) {
         previous.map((building) => ({
           ...building,
           tanks: building.tanks.map((tank) => {
+            if (
+              building.id === d1SourceBuildingId &&
+              tank.name.trim().toLowerCase() === "flushing" &&
+              sensorLevelRef.current !== null
+            ) return tank;
             if (tank.name.toLowerCase() !== "flushing") return tank;
             const currentLevel =
               phase === 0 ? tank.criticalThreshold : phase === 1 ? tank.lowThreshold : 100;

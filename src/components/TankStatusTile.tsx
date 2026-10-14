@@ -107,7 +107,15 @@ export default function TankStatusTile({ type, data, flowEnabled = false }: Tank
   const meta = TANK_STATUS_META[data.status];
   const level = data.levelPercentage;
   const installed = data.installationStatus === "installed" && level !== null;
-  const tankAnimationLevel = installed ? (level <= 20 ? 10 : level >= 80 ? 80 : 20) : null;
+  const tankAnimationLevel = installed
+    ? flowEnabled
+      ? level
+      : level <= 20
+        ? 10
+        : level >= 80
+          ? 80
+          : 20
+    : null;
   const showThresholdValues = data.installationStatus === "installed";
   const waterColor = meta.water ?? "#0ea5e9";
 
@@ -173,7 +181,7 @@ export default function TankStatusTile({ type, data, flowEnabled = false }: Tank
               width={RENDER_W}
               waterColor={waterColor}
               thresholds={installed ? data.thresholds : null}
-              flowActive={flowEnabled && installed}
+              flowActive={flowEnabled && installed && data.valve.status === "open"}
               ariaLabel={`${data.name} tank ${
                 installed ? `${Math.round(level)} percent full` : meta.label
               }`}

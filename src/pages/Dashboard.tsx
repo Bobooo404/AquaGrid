@@ -142,6 +142,11 @@ function InstallationIndicator({ status }: { status: InstallationStatus }) {
 }
 function BuildingCard({ building, onSelect }: { building: Building; onSelect: () => void }) {
   const statusTanks = building.tanks.slice(0, 3);
+  const flushingValveOpen = building.valves.some(
+    (valve) =>
+      valve.name.replace(/\s+valve$/i, "").trim().toLowerCase() === "flushing" &&
+      valve.status === "open",
+  );
 
   return (
     <div
@@ -173,10 +178,18 @@ function BuildingCard({ building, onSelect }: { building: Building; onSelect: ()
             level={tank.currentLevel}
             capacity={tank.capacity}
             name={tank.name}
-            buildingName={building.name}
             type={tank.type}
             size="md"
             installationStatus={tank.installationStatus}
+            flowActive={
+              building.name === "Building D1" &&
+              tank.name.trim().toLowerCase() === "flushing" &&
+              flushingValveOpen
+            }
+            exactLevel={
+              building.name === "Building D1" &&
+              tank.name.trim().toLowerCase() === "flushing"
+            }
           />
         ))}
       </div>

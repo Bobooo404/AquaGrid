@@ -58,7 +58,7 @@ export default function Sidebar({ currentPage, onNavigate, alertCount, user, onL
         style={{ borderBottom: "1px solid var(--border)", gap: "10.185px" }}
       >
         <img
-          src="/Aquagridlogobgr.svg"
+          src="/Aquagridlogobgr.png"
           alt="AquaGrid"
           className="flex-shrink-0 h-[37px] w-auto"
         />
