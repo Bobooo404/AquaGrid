@@ -28,6 +28,10 @@ export default function AquaGridApp() {
     alerts,
     logs,
     wsConnected,
+    isRefreshingState,
+    stateRefreshFeedback,
+    lastStateUpdatedAt,
+    refreshState,
     acknowledgeAlert,
     toggleValve,
     updateThresholds,
@@ -136,6 +140,10 @@ export default function AquaGridApp() {
               alerts={alerts}
               selectedSite={selectedSite}
               onSelectBuilding={handleViewBuilding}
+              isRefreshingState={isRefreshingState}
+              stateRefreshFeedback={stateRefreshFeedback}
+              lastStateUpdatedAt={lastStateUpdatedAt}
+              onRefreshState={refreshState}
             />
           )}
 
@@ -155,6 +163,10 @@ export default function AquaGridApp() {
                 alerts={alerts}
                 selectedSite={selectedSite}
                 onSelectBuilding={handleViewBuilding}
+                isRefreshingState={isRefreshingState}
+                stateRefreshFeedback={stateRefreshFeedback}
+                lastStateUpdatedAt={lastStateUpdatedAt}
+                onRefreshState={refreshState}
               />
             )
           )}

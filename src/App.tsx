@@ -27,6 +27,10 @@ export default function App() {
     alerts,
     logs,
     wsConnected,
+    isRefreshingState,
+    stateRefreshFeedback,
+    lastStateUpdatedAt,
+    refreshState,
     acknowledgeAlert,
     toggleValve,
     updateThresholds,
@@ -133,6 +137,10 @@ export default function App() {
               alerts={alerts}
               selectedSite={selectedSite}
               onSelectBuilding={handleViewBuilding}
+              isRefreshingState={isRefreshingState}
+              stateRefreshFeedback={stateRefreshFeedback}
+              lastStateUpdatedAt={lastStateUpdatedAt}
+              onRefreshState={refreshState}
             />
           )}
 
@@ -152,6 +160,10 @@ export default function App() {
                 alerts={alerts}
                 selectedSite={selectedSite}
                 onSelectBuilding={handleViewBuilding}
+                isRefreshingState={isRefreshingState}
+                stateRefreshFeedback={stateRefreshFeedback}
+                lastStateUpdatedAt={lastStateUpdatedAt}
+                onRefreshState={refreshState}
               />
             )
           )}

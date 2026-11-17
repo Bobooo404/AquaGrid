@@ -1,11 +1,14 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { animate, stagger } from "animejs";
 import {
+  AlertCircle,
   Building2,
   AlertTriangle,
+  CheckCircle2,
   Droplet,
   ArrowRight,
   RotateCw,
+  Loader2,
   Circle,
   Search,
   Construction,
@@ -20,12 +23,18 @@ import {
   type MonitoredBuilding,
 } from "../data/mockData";
 import TankVisual from "../components/TankVisual";
+import { formatTimestamp } from "../data/tankStatus";
+import type { StateRefreshFeedback } from "../hooks/useSimulation";
 
 interface DashboardProps {
   buildings: Building[];
   alerts: Alert[];
   selectedSite: string | null;
   onSelectBuilding: (id: string, name: string) => void;
+  isRefreshingState: boolean;
+  stateRefreshFeedback: StateRefreshFeedback | null;
+  lastStateUpdatedAt: Date | null;
+  onRefreshState: () => void;
 }
 
 function StatCard({
@@ -264,7 +273,16 @@ function alertIsForInstalledEquipment(alert: Alert, building: MonitoredBuilding)
   );
 }
 
-export default function Dashboard({ buildings, alerts, selectedSite, onSelectBuilding }: DashboardProps) {
+export default function Dashboard({
+  buildings,
+  alerts,
+  selectedSite,
+  onSelectBuilding,
+  isRefreshingState,
+  stateRefreshFeedback,
+  lastStateUpdatedAt,
+  onRefreshState,
+}: DashboardProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
 
@@ -317,11 +335,47 @@ export default function Dashboard({ buildings, alerts, selectedSite, onSelectBui
 
   return (
       <div className="flex flex-col gap-6 p-6 h-full overflow-y-auto max-sm:p-4" style={{ background: "var(--bg-primary)" }}>
-      <div>
-        <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>System Dashboard</h1>
-        <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
-          Real-time overview · {availableBuildings.length} buildings monitored
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>System Dashboard</h1>
+          <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>
+            Real-time overview · {availableBuildings.length} buildings monitored
+          </p>
+        </div>
+        {selectedSite && (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <span className="text-[11px] font-mono" style={{ color: "var(--text-muted)" }}>
+              {lastStateUpdatedAt ? `Updated ${formatTimestamp(lastStateUpdatedAt)}` : "Not refreshed yet"}
+            </span>
+            {stateRefreshFeedback && (
+              <div
+                className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-mono alert-enter"
+                style={{
+                  background: stateRefreshFeedback.type === "success" ? "var(--success-surface)" : "var(--danger-surface)",
+                  border: `1px solid ${stateRefreshFeedback.type === "success" ? "var(--success-border)" : "var(--danger-border)"}`,
+                  color: stateRefreshFeedback.type === "success" ? "var(--success-text)" : "var(--danger-text)",
+                }}
+              >
+                {stateRefreshFeedback.type === "success"
+                  ? <CheckCircle2 size={13} />
+                  : <AlertCircle size={13} />}
+                <span>{stateRefreshFeedback.message}</span>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={onRefreshState}
+              disabled={isRefreshingState}
+              aria-label="Refresh water levels and valve statuses"
+              title="Refresh water levels and valve statuses"
+              className="flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ background: "linear-gradient(90deg, var(--accent-cyan), var(--accent-blue))" }}
+            >
+              {isRefreshingState ? <Loader2 size={14} className="animate-spin" /> : <RotateCw size={14} />}
+              {isRefreshingState ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Stat cards */}

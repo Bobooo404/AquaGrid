@@ -60,6 +60,7 @@ export interface Building {
   pipelines: Pipeline[]
   lastUpdated: Date
   refillMode?: 0 | 1
+  stateApiControlled?: boolean
 }
 
 export type BuildingStatus = "critical" | "attention" | "normal"
@@ -110,6 +111,9 @@ export const getPipelineInstallationStatus = (
 export const applyDisplayStatus = (building: Building, name: string): Building => {
   const tanks = building.tanks.map((tank) => {
     if (tank.installationStatus) return tank
+    if (name === "Building D1" && building.stateApiControlled && !tank.installationStatus) {
+      return { ...tank, installationStatus: "installed" as const }
+    }
     if (name === "Building D1" && ["domestic", "drinking"].includes(tank.name.toLowerCase())) {
       return { ...tank, installationStatus: "under-installation" as const }
     }
@@ -124,6 +128,9 @@ export const applyDisplayStatus = (building: Building, name: string): Building =
 
   const valves = building.valves.map((valve) => {
     const label = valve.name.replace(/\s+valve$/i, "").toLowerCase()
+    if (name === "Building D1" && building.stateApiControlled && !valve.manualOverride && valve.status !== "stuck") {
+      return label === "flushing" ? { ...valve, pipelineType: "sewage" as const } : valve
+    }
     if (name === "Building D1" && label === "flushing" && building.refillMode !== undefined) {
       return {
         ...valve,
