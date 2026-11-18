@@ -1,0 +1,19 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/get-state"
+  to = "/.netlify/functions/api-proxy?endpoint=get-state"
+  status = 200
+
+[[redirects]]
+  from = "/api/get_refill_mode"
+  to = "/.netlify/functions/api-proxy?endpoint=get_refill_mode"
+  status = 200
+
+[[redirects]]
+  from = "/api/get_sensor_level"
+  to = "/.netlify/functions/api-proxy?endpoint=get_sensor_level"
+  status = 200

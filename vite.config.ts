@@ -10,4 +10,18 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss()
   ],
+  server: {
+    proxy: {
+      "/api/get_refill_mode": {
+        target: "https://server.manurobotics.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "/auto_logs"),
+      },
+      "/api/get_sensor_level": {
+        target: "https://server.manurobotics.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "/auto_logs"),
+      },
+    },
+  },
 })

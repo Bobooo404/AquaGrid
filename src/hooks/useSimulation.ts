@@ -52,26 +52,19 @@ function autoControl(building: Building): Building {
 }
 
 const emptyBuildings: Building[] = [];
-const stateApiUrl = "https://server.manurobotics.com/auto_logs_2/api/get-state";
-const stateApiRequestBody = {
-  site_id: "MAJ101",
-  building_id: "0",
-  wing_id: "1",
-} as const;
+const refillModeUrl = "/api/get_refill_mode";
+const sensorLevelUrl = "/api/get_sensor_level";
 const d1SourceBuildingId = initialBuildings[0]?.id;
 
-type StateApiCategory = "flushing" | "domestic" | "drinking";
 type StateApiValveStatus = "open" | "closed";
 
 interface StateApiReading {
-  waterLevel: number;
-  valveStatus: StateApiValveStatus;
+  waterLevel?: number;
+  valveStatus?: StateApiValveStatus;
 }
 
 interface StateApiReadings {
   flushing: StateApiReading;
-  domestic: StateApiReading;
-  drinking: StateApiReading;
 }
 
 export interface StateRefreshFeedback {
@@ -79,66 +72,54 @@ export interface StateRefreshFeedback {
   message: string;
 }
 
-const stateApiCategories: StateApiCategory[] = ["flushing", "domestic", "drinking"];
-
-function getStateCategory(name: string): StateApiCategory | null {
-  const normalized = name.replace(/\s+valve$/i, "").trim().toLowerCase();
-  return stateApiCategories.find((category) => category === normalized) ?? null;
-}
-
-function readStateCategory(payload: unknown, category: StateApiCategory): StateApiReading {
-  if (typeof payload !== "object" || payload === null || !(category in payload)) {
-    throw new Error(`API response is missing "${category}"`);
-  }
-
-  const value: unknown = Reflect.get(payload, category);
-  if (typeof value !== "object" || value === null) {
-    throw new Error(`API response "${category}" must be an object`);
-  }
-
-  const waterLevel: unknown = Reflect.get(value, "water_level");
-  if (typeof waterLevel !== "number" || !Number.isFinite(waterLevel)) {
-    throw new Error(`API response "${category}.water_level" must be a finite number`);
-  }
-  if (waterLevel < 0 || waterLevel > 100) {
-    throw new Error(`API response "${category}.water_level" must be between 0 and 100`);
-  }
-
-  const rawValveStatus: unknown = Reflect.get(value, "valve_status");
-  if (typeof rawValveStatus !== "string") {
-    throw new Error(`API response "${category}.valve_status" must be a string`);
-  }
-
-  const normalizedStatus = rawValveStatus.trim().toUpperCase();
-  const valveStatus: StateApiValveStatus | null =
-    normalizedStatus === "OPEN"
-      ? "open"
-      : normalizedStatus === "CLOSE" || normalizedStatus === "CLOSED"
-        ? "closed"
-        : null;
-  if (!valveStatus) {
-    throw new Error(`API response "${category}.valve_status" must be OPEN or CLOSE`);
-  }
-
-  return { waterLevel, valveStatus };
-}
-
-async function fetchState(signal: AbortSignal): Promise<StateApiReadings> {
-  const response = await fetch(stateApiUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(stateApiRequestBody),
-    signal,
-  });
+async function fetchApiNumber(url: string, field: "mode" | "level", signal: AbortSignal): Promise<number> {
+  const response = await fetch(url, { signal });
   if (!response.ok) {
     throw new Error(`Request failed with status ${response.status}`);
   }
 
-  const payload: unknown = await response.json();
+  let payload: unknown;
+  try {
+    payload = JSON.parse(await response.text());
+  } catch {
+    throw new Error("Invalid JSON response from the server.");
+  }
+  if (typeof payload !== "object" || payload === null || !(field in payload)) {
+    throw new Error(`API response is missing "${field}"`);
+  }
+
+  const value: unknown = Reflect.get(payload, field);
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`API response "${field}" must be a finite number`);
+  }
+  return value;
+}
+
+async function fetchState(signal: AbortSignal): Promise<StateApiReadings> {
+  const [modeResult, levelResult] = await Promise.allSettled([
+    fetchApiNumber(refillModeUrl, "mode", signal),
+    fetchApiNumber(sensorLevelUrl, "level", signal),
+  ]);
+
+  const mode = modeResult.status === "fulfilled" ? modeResult.value : null;
+  const level = levelResult.status === "fulfilled" ? levelResult.value : null;
+  if (mode === null && level === null) {
+    if (modeResult.status === "rejected") throw modeResult.reason;
+    if (levelResult.status === "rejected") throw levelResult.reason;
+    throw new Error("Unable to refresh water state.");
+  }
+  if (mode !== null && mode !== 0 && mode !== 1) {
+    throw new Error("Invalid refill mode from API: expected 0 or 1");
+  }
+  if (level !== null && (level < 0 || level > 100)) {
+    throw new Error("Invalid sensor level from API: expected a value from 0 to 100");
+  }
+
   return {
-    flushing: readStateCategory(payload, "flushing"),
-    domestic: readStateCategory(payload, "domestic"),
-    drinking: readStateCategory(payload, "drinking"),
+    flushing: {
+      ...(mode !== null ? { valveStatus: mode === 1 ? "open" as const : "closed" as const } : {}),
+      ...(level !== null ? { waterLevel: level } : {}),
+    },
   };
 }
 
@@ -211,25 +192,27 @@ export function useSimulation(selectedSite: string | null) {
         previous.map((building) => {
           if (building.id !== d1SourceBuildingId) return building;
 
+          const { waterLevel, valveStatus } = readings.flushing;
           return {
             ...building,
-            stateApiControlled: true,
-            refillMode: readings.flushing.valveStatus === "open" ? 1 : 0,
+            ...(valveStatus ? { refillMode: valveStatus === "open" ? 1 as const : 0 as const } : {}),
             lastUpdated: changedAt,
-            tanks: building.tanks.map((tank) => {
-              const category = getStateCategory(tank.name);
-              const reading = category ? readings[category] : null;
-              return reading ? { ...tank, currentLevel: reading.waterLevel } : tank;
-            }),
+            tanks: building.tanks.map((tank) =>
+              tank.name.trim().toLowerCase() === "flushing" && waterLevel !== undefined
+                ? { ...tank, currentLevel: waterLevel }
+                : tank,
+            ),
             valves: building.valves.map((valve) => {
-              const category = getStateCategory(valve.name);
-              const reading = category ? readings[category] : null;
-              if (!reading || valve.status === reading.valveStatus) return valve;
+              if (
+                valve.name.replace(/\s+valve$/i, "").trim().toLowerCase() !== "flushing" ||
+                !valveStatus ||
+                valve.status === valveStatus
+              ) return valve;
               return {
                 ...valve,
-                status: reading.valveStatus,
+                status: valveStatus,
                 lastUpdated: changedAt,
-                ...(reading.valveStatus === "open"
+                ...(valveStatus === "open"
                   ? { lastOpenedAt: changedAt }
                   : { lastClosedAt: changedAt }),
               };
@@ -355,7 +338,10 @@ export function useSimulation(selectedSite: string | null) {
         previous.map((building) => ({
           ...building,
           tanks: building.tanks.map((tank) => {
-            if (building.stateApiControlled && tank.name.trim().toLowerCase() === "flushing") return tank;
+            if (
+              (building.stateApiControlled || building.refillMode !== undefined) &&
+              tank.name.trim().toLowerCase() === "flushing"
+            ) return tank;
             if (tank.name.toLowerCase() !== "flushing") return tank;
             const currentLevel =
               phase === 0 ? tank.criticalThreshold : phase === 1 ? tank.lowThreshold : 100;
