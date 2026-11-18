@@ -52,7 +52,9 @@ function autoControl(building: Building): Building {
 }
 
 const emptyBuildings: Building[] = [];
-const stateApiUrl = "/api/get-state";
+const stateApiUrl = import.meta.env.PROD
+  ? "/.netlify/functions/api-proxy?endpoint=get-state"
+  : "/api/get-state";
 const stateApiRequestBody = {
   site_id: "MAJ101",
   building_id: "D",

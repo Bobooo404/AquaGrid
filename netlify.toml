@@ -4,8 +4,3 @@
 
 [functions]
   directory = "netlify/functions"
-
-[[redirects]]
-  from = "/api/get-state"
-  to = "/.netlify/functions/get-state"
-  status = 200
