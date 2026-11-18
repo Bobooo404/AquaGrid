@@ -1,9 +1,11 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  functions = "netlify/functions"
+
+[functions]
+  directory = "netlify/functions"
 
 [[redirects]]
   from = "/api/get-state"
-  to = "/.netlify/functions/api-proxy?endpoint=get-state"
+  to = "/.netlify/functions/get-state"
   status = 200
