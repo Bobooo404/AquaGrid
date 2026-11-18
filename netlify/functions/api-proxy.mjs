@@ -21,11 +21,14 @@ export const handler = async (event) => {
   }
 
   try {
-    const method = event.httpMethod ?? "GET";
+    const method = endpoint === "get-state" ? "POST" : (event.httpMethod ?? "GET");
+    const body = endpoint === "get-state"
+      ? JSON.stringify({ site_id: "MAJ101", building_id: "D", wing_id: "1" })
+      : (method === "GET" ? undefined : (event.body ?? "{}"));
     const response = await fetch(url, {
       method,
       headers: method === "GET" ? undefined : { "Content-Type": "application/json" },
-      body: method === "GET" ? undefined : (event.body ?? "{}"),
+      body,
     });
 
     const upstreamContentType = response.headers.get("content-type");

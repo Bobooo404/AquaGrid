@@ -13,6 +13,7 @@ interface TankStatusTileProps {
   type: TankKind;
   data: TankStatusData;
   flowEnabled?: boolean;
+  exactLevel?: boolean;
 }
 
 const RENDER_W = 162;
@@ -103,12 +104,12 @@ function ThresholdChip({
   );
 }
 
-export default function TankStatusTile({ type, data, flowEnabled = false }: TankStatusTileProps) {
+export default function TankStatusTile({ type, data, flowEnabled = false, exactLevel = false }: TankStatusTileProps) {
   const meta = TANK_STATUS_META[data.status];
   const level = data.levelPercentage;
   const installed = data.installationStatus === "installed" && level !== null;
   const tankAnimationLevel = installed
-    ? flowEnabled
+    ? flowEnabled || exactLevel
       ? level
       : level <= 20
         ? 10

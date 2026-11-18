@@ -20,6 +20,7 @@ export default function TankGrid({ building, className = "" }: TankGridProps) {
           type={tank.kind}
           data={tank}
           flowEnabled={building.name === "Building D1" && tank.kind === "flushing"}
+          exactLevel={building.stateApiControlled === true}
         />
       ))}
     </div>

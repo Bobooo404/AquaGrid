@@ -11,16 +11,12 @@ export default defineConfig({
     tailwindcss()
   ],
   server: {
+    host: "0.0.0.0",
     proxy: {
-      "/api/get_refill_mode": {
+      "/api/get-state": {
         target: "https://server.manurobotics.com",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, "/auto_logs"),
-      },
-      "/api/get_sensor_level": {
-        target: "https://server.manurobotics.com",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, "/auto_logs"),
+        rewrite: (path) => path.replace(/^\/api/, "/auto_logs_2/api"),
       },
     },
   },

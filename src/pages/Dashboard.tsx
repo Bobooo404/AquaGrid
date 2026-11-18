@@ -195,10 +195,7 @@ function BuildingCard({ building, onSelect }: { building: Building; onSelect: ()
               tank.name.trim().toLowerCase() === "flushing" &&
               flushingValveOpen
             }
-            exactLevel={
-              building.name === "Building D1" &&
-              tank.name.trim().toLowerCase() === "flushing"
-            }
+            exactLevel={building.stateApiControlled === true}
           />
         ))}
       </div>
